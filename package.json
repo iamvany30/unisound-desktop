@@ -1,6 +1,6 @@
 {
   "name": "unisound-react",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "Desktop music application built with React and Electron.",
   "author": "iamvany20",
@@ -9,7 +9,7 @@
   "main": "build/electron.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/iamvany20/unisound-react.git"
+    "url": "https://github.com/iamvany30/unisound-desktop.git"
   },
   "scripts": {
     "start": "react-scripts start",
