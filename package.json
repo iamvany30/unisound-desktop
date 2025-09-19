@@ -1,6 +1,6 @@
 {
   "name": "unisound-react",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "private": true,
   "description": "Desktop music application built with React and Electron.",
   "author": "iamvany20",
