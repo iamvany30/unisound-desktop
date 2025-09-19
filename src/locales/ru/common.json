@@ -1,0 +1,22 @@
+{
+    "header": {
+      "home": "Главная",
+      "library": "Библиотека",
+      "profile": "Мой профиль",
+      "logout": "Выйти",
+      "login": "Войти",
+      "register": "Регистрация",
+      "settings": "Настройки",
+      "searchPlaceholder": "Поиск...",
+      "adminPanel": "Админ-панель"
+    },
+    "common": {
+      "cancel": "Отмена",
+      "confirm": "Подтвердить",
+      "ok": "OK",
+      "confirmation": "Подтверждение"
+    },
+    "app": {
+      "authorizing": "Авторизация..."
+    }
+  }

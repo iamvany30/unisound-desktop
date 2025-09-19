@@ -1,0 +1,47 @@
+{
+    "loading": "Загрузка профиля...",
+    "error": "Ошибка: {{message}}",
+    "loadFailed": "Не удалось загрузить профиль. Попробуйте обновить страницу.",
+    "retry": "Повторить",
+    "profileNotFound": "Профиль не найден",
+  
+    "changeAvatar": "Изменить",
+    "uploadAvatar": "Загрузить",
+    "deleteAvatar": "Удалить аватар",
+    "avatarUpdateSuccess": "Аватар успешно обновлен!",
+    "avatarUpdateError": "Ошибка при обновлении аватара.",
+    "deleteAvatarConfirm": "Вы уверены, что хотите удалить аватар?",
+    "avatarDeleteSuccess": "Аватар удален.",
+    "avatarDeleteError": "Ошибка при удалении аватара.",
+    "invalidImageType": "Неверный тип файла. Пожалуйста, выберите JPEG, PNG или WEBP.",
+    "imageTooLarge": "Файл слишком большой. Максимальный размер - 5 МБ.",
+  
+    "noEmail": "Email не указан",
+    "memberSince": "Участник с",
+    "subscription": "Подписка",
+    "subscriptionFree": "Бесплатная",
+    "subscriptionActive": "{{type}} до {{date}}",
+    "subscriptionExpired": "Истекла",
+    "status": "Статус",
+    "administrator": "Администратор",
+  
+    "tracksPlayed": "Прослушано треков",
+    "listeningTime": "Время прослушивания",
+    "estimatedMinutes": "~{{minutes}} мин.",
+  
+    "listeningHistory": "История прослушиваний",
+    "noHistory": "История прослушивания пока пуста",
+    "noHistoryDescription": "Начните слушать музыку, и ваши треки появятся здесь.",
+    
+    "justNow": "Только что",
+    "minutesAgo_one": "{{count}} минуту назад",
+    "minutesAgo_few": "{{count}} минуты назад",
+    "minutesAgo_many": "{{count}} минут назад",
+    "hoursAgo_one": "{{count}} час назад",
+    "hoursAgo_few": "{{count}} часа назад",
+    "hoursAgo_many": "{{count}} часов назад",
+    "yesterday": "Вчера",
+    "daysAgo_one": "{{count}} день назад",
+    "daysAgo_few": "{{count}} дня назад",
+    "daysAgo_many": "{{count}} дней назад"
+  }

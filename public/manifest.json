@@ -1,0 +1,47 @@
+{
+  "short_name": "UniSound",
+  "name": "UniSound: Your Personal Music Wave",
+  "description": "Discover and enjoy your personal music wave with UniSound. Stream endless recommendations, create playlists, and dive into a universe of sound.",
+  "icons": [
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "logo-maskable-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
+  ],
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#0d1117",
+  "background_color": "#0d1117",
+  "shortcuts": [
+    {
+      "name": "My Wave",
+      "short_name": "Wave",
+      "description": "Launch your personal endless music stream",
+      "url": "/?action=play_wave",
+      "icons": [{ "src": "logo192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Search Music",
+      "short_name": "Search",
+      "description": "Find your favorite tracks, artists, and playlists",
+      "url": "/?action=search",
+      "icons": [{ "src": "logo192.png", "sizes": "192x192" }]
+    }
+  ],
+  "categories": ["music", "media", "entertainment"]
+}

@@ -1,0 +1,12 @@
+{
+    "waveHero": {
+      "myWave": "Моя волна",
+      "play": "Слушать"
+    },
+    "dailyStats": "Статистика за сегодня",
+    "tracksListened": "Треков прослушано",
+    "minutesListened": "Минут прослушано",
+    "artistsDiscovered": "Открыто артистов",
+    "recommendations": "Специально для вас",
+    "loadError": "Не удалось загрузить данные для главной страницы."
+  }

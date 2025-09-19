@@ -1,0 +1,29 @@
+# Зависимости
+/node_modules
+
+# Папки сборки
+/build
+/dist
+
+# Логи
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Файлы операционной системы
+.DS_Store
+Thumbs.db
+
+# Файлы редактора
+.idea
+.vscode/
+
+# Файлы окружения (очень важно!)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Временные файлы и кеш
+*.tsbuildinfo

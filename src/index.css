@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import "./assets/glass.css";
+@import "./assets/background.css"; 
+@import "./assets/theme.css"; 
+@import "./assets/styles.css"; 
+@import "./assets/TrackComponents.css"; 
+@import "./components/Common/AppLoader.css";
+
