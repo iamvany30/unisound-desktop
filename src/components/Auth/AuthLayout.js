@@ -1,9 +1,12 @@
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Music, ArrowLeft } from 'lucide-react';
 import './AuthLayout.css';
 
+const BACKGROUND_IMAGES = [
+    "1.jpg", "2.jpg", "3.jpg", "4.jpg", "5.jpg", "12.jpg", "13.jpg",
+    "14.jpg", "15.jpg", "16.jpg", "17.jpg", "18.jpg", "19.jpg"
+];
 
 const shuffleArray = (array) => {
     const shuffled = [...array];
@@ -13,7 +16,6 @@ const shuffleArray = (array) => {
     }
     return shuffled;
 };
-
 
 const ImageLoadingIndicator = ({ isLoading, progress }) => {
     if (!isLoading) return null;
@@ -30,9 +32,7 @@ const ImageLoadingIndicator = ({ isLoading, progress }) => {
     );
 };
 
-
-
-const ParticleSystem = ({ particleCount = 8, isActive = true }) => {
+const ParticleSystem = ({ particleCount = 8 }) => {
     const particles = useMemo(() => {
         return Array.from({ length: particleCount }, (_, index) => ({
             id: index,
@@ -44,8 +44,6 @@ const ParticleSystem = ({ particleCount = 8, isActive = true }) => {
             color: Math.random() > 0.5 ? 'var(--color-accent-primary)' : 'var(--color-accent-glow-2)'
         }));
     }, [particleCount]);
-
-    if (!isActive) return null;
 
     return (
         <div className="auth-particles">
@@ -68,73 +66,61 @@ const ParticleSystem = ({ particleCount = 8, isActive = true }) => {
     );
 };
 
-
-const BackgroundSlider = ({ images, interval = 6000, enableTransitions = true }) => {
+const BackgroundSlider = ({ images, interval = 6000 }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [loadedImages, setLoadedImages] = useState(new Set());
     const [isLoading, setIsLoading] = useState(true);
     const [loadingProgress, setLoadingProgress] = useState(0);
 
-    
+    const shuffledImages = useMemo(() => shuffleArray(images), [images]);
+
     useEffect(() => {
-        if (!images.length) return;
+        if (!shuffledImages.length) {
+            setIsLoading(false);
+            return;
+        }
 
-        const preloadImages = async () => {
-            setIsLoading(true);
-            const promises = images.map((imageName, index) => {
-                return new Promise((resolve, reject) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        setLoadedImages(prev => new Set([...prev, imageName]));
-                        setLoadingProgress((index + 1) / images.length * 100);
-                        resolve(imageName);
-                    };
-                    img.onerror = reject;
-                    img.src = `./back_auth/${imageName}`; 
-                });
-            });
+        let loadedCount = 0;
+        const totalImages = shuffledImages.length;
 
-            try {
-                await Promise.all(promises);
-                setTimeout(() => setIsLoading(false), 500); 
-            } catch (error) {
-                console.error('Ошибка загрузки изображений:', error);
-                setIsLoading(false);
-            }
-        };
+        shuffledImages.forEach((imageName) => {
+            const img = new Image();
+            img.onload = () => {
+                loadedCount++;
+                setLoadingProgress((loadedCount / totalImages) * 100);
+                if (loadedCount === totalImages) {
+                    setTimeout(() => setIsLoading(false), 300); 
+                }
+            };
+            img.onerror = () => {
+                loadedCount++;
+                console.warn(`Не удалось загрузить фоновое изображение: ${imageName}`);
+                if (loadedCount === totalImages) {
+                    setTimeout(() => setIsLoading(false), 300);
+                }
+            };
+            img.src = `./back_auth/${imageName}`;
+        });
+    }, [shuffledImages]);
 
-        preloadImages();
-    }, [images]);
-
-    
     useEffect(() => {
-        if (!enableTransitions || images.length <= 1 || isLoading) return;
+        if (isLoading || shuffledImages.length <= 1) return;
 
         const intervalId = setInterval(() => {
-            setCurrentIndex(prevIndex => (prevIndex + 1) % images.length);
+            setCurrentIndex(prevIndex => (prevIndex + 1) % shuffledImages.length);
         }, interval);
 
         return () => clearInterval(intervalId);
-    }, [images.length, interval, enableTransitions, isLoading]);
-
-    if (!images.length) {
-        return <div className="auth-bg-slider fallback-bg" />;
-    }
+    }, [isLoading, shuffledImages.length, interval]);
 
     return (
         <>
             <ImageLoadingIndicator isLoading={isLoading} progress={loadingProgress} />
             <div className="auth-bg-slider">
-                {images.map((imageName, index) => (
+                {shuffledImages.map((imageName, index) => (
                     <div
                         key={`${imageName}-${index}`}
-                        className={`auth-bg-image ${
-                            index === currentIndex && !isLoading ? 'visible' : ''
-                        }`}
-                        style={{ 
-                            backgroundImage: `url(./back_auth/${imageName})`,
-                            zIndex: index === currentIndex ? 1 : 0
-                        }}
+                        className={`auth-bg-image ${index === currentIndex && !isLoading ? 'visible' : ''}`}
+                        style={{ backgroundImage: `url(./back_auth/${imageName})` }}
                         role="img"
                         aria-label={`Фоновое изображение ${index + 1}`}
                     />
@@ -144,72 +130,21 @@ const BackgroundSlider = ({ images, interval = 6000, enableTransitions = true })
     );
 };
 
-
-const AuthLayout = ({ 
-    children, 
-    showParticles = true,
-    particleCount = 8,
-    backgroundInterval = 6000,
-    enableBackgroundTransitions = true 
-}) => {
-    const [backgroundImages, setBackgroundImages] = useState([]);
-    const [error, setError] = useState(null);
-
-    
-    const fetchBackgroundImages = useCallback(async () => {
-        try {
-            const response = await fetch('/back_auth/manifest.json');
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            
-            const data = await response.json();
-            
-            if (data.images && Array.isArray(data.images) && data.images.length > 0) {
-                setBackgroundImages(shuffleArray(data.images));
-            } else {
-                
-                setBackgroundImages(['1.jpg', '2.jpg', '3.jpg']);
-            }
-        } catch (error) {
-            console.error('Не удалось загрузить манифест фоновых изображений:', error);
-            setError(error.message);
-            
-            setBackgroundImages(['1.jpg']);
-        }
-    }, []);
-
-    useEffect(() => {
-        fetchBackgroundImages();
-    }, [fetchBackgroundImages]);
+const AuthLayout = ({ children }) => {
+    const location = useLocation();
+    const isLoginPage = location.pathname === '/login';
 
     return (
         <div className="auth-layout" role="main">
-
-
-
-            <BackgroundSlider 
-                images={backgroundImages}
-                interval={backgroundInterval}
-                enableTransitions={enableBackgroundTransitions}
-            />
-
-            <ParticleSystem 
-                particleCount={particleCount} 
-                isActive={showParticles} 
-            />
-
-            <div id="main-content" className="auth-content-wrapper">
-                <div className="auth-content-container">
-                    {children}
-                </div>
-            </div>
-
-            {error && (
-                <div className="error-toast" role="alert">
-                    <p>Проблема с загрузкой фона: {error}</p>
-                </div>
-            )}
+            <header className="auth-layout-header">
+                <Link to="/" className="auth-layout-logo" aria-label="На главную">
+                    <Music size={28} />
+                    <span>UniSound</span>
+                </Link>
+            </header>
+            
+            <BackgroundSlider images={BACKGROUND_IMAGES} />
+            <ParticleSystem />
         </div>
     );
 };
