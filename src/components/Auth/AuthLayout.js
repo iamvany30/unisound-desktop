@@ -145,6 +145,12 @@ const AuthLayout = ({ children }) => {
             
             <BackgroundSlider images={BACKGROUND_IMAGES} />
             <ParticleSystem />
+
+            <div id="main-content" className="auth-content-wrapper">
+                <div className="auth-content-container">
+                    {children}
+                </div>
+            </div>
         </div>
     );
 };
