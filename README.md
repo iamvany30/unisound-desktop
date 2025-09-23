@@ -82,5 +82,5 @@
 
 Клонируйте репозиторий на свой компьютер:
 ```sh
-git clone https://your-repository-url.git
+git clone https://github.com/iamvany30/unisound-desktop.git
 cd unisound-project
