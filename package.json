@@ -79,6 +79,7 @@
     "appId": "com.unisound.app",
     "productName": "Unisound",
     "artifactName": "${productName}-Setup-${version}.${ext}",
+    "compression": "maximum",
     "publish": {
       "provider": "github",
       "owner": "iamvany30",
@@ -113,9 +114,20 @@
       "category": "public.app-category.music"
     },
     "linux": {
-      "target": "AppImage",
+      "target": [
+        "AppImage",
+        "deb",
+        "rpm"
+      ],
       "icon": "assets/icon.png",
-      "category": "AudioVideo;Audio"
+      "category": "AudioVideo;Audio",
+      "description": "Desktop music application built with React and Electron.",
+      "desktop": {
+        "Name": "Unisound Music Player",
+        "GenericName": "Music Player",
+        "Comment": "Play your favorite music from local files or online sources.",
+        "MimeType": "audio/mpeg;audio/wav;audio/ogg;audio/flac;"
+      }
     }
   }
 }
