@@ -14,9 +14,13 @@ let mainWindow;
 let tray;
 let karaokeWindow;
 
-autoUpdater.logger = log;
-autoUpdater.logger.transports.file.level = 'info';
-autoUpdater.autoDownload = false;
+
+log.transports.file.resolvePath = () => path.join(app.getPath('userData'), 'logs/main.log');
+log.transports.file.level = 'info';
+Object.assign(console, log.functions);
+
+autoUpdater.logger = log; 
+autoUpdater.autoDownload = false; 
 
 const createThumbarIcon = (iconName) => {
   const iconPath = path.join(__dirname, `../src/assets/icons/${iconName}.png`);
@@ -24,12 +28,12 @@ const createThumbarIcon = (iconName) => {
   try {
     const image = nativeImage.createFromPath(iconPath);
     if (image.isEmpty()) {
-      console.error(`Icon loading error: ${iconName}. Path: ${iconPath}`);
+      console.error(`Ошибка загрузки иконки: ${iconName}. Путь: ${iconPath}`);
       return null;
     }
     return image;
   } catch (error) {
-    console.error(`Critical error loading icon "${iconName}":`, error);
+    console.error(`Критическая ошибка загрузки иконки "${iconName}":`, error);
     return null;
   }
 };
@@ -79,6 +83,8 @@ function createKaraokeWindow() {
 }
 
 function createWindow() {
+  console.log('Создание главного окна приложения...');
+  
   const savedWindowState = store.get('windowState', { width: 1280, height: 800 });
 
   mainWindow = new BrowserWindow({
@@ -91,9 +97,9 @@ function createWindow() {
     backgroundColor: '#00000000',
     show: false,
     webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
       preload: path.join(__dirname, "preload.js"),
+      contextIsolation: true, 
+      nodeIntegration: false, 
     },
     icon: path.join(__dirname, '../public/favicon.ico'),
   });
@@ -105,7 +111,9 @@ function createWindow() {
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
+    console.log('Окно готово к показу.');
     if (!isDev) {
+      console.log('Запуск проверки обновлений...');
       autoUpdater.checkForUpdates();
     }
   });
@@ -144,32 +152,33 @@ function createWindow() {
   });
 
   autoUpdater.on('checking-for-update', () => {
-    log.info('Checking for updates...');
+    console.log('Проверка обновлений...');
     mainWindow.webContents.send('update-message', { msg: 'checking' });
   });
 
   autoUpdater.on('update-available', (info) => {
-    log.info('Update available.', info);
+    console.log('Доступно обновление:', info);
     mainWindow.webContents.send('update-message', { msg: 'available', info });
   });
 
   autoUpdater.on('update-not-available', () => {
-    log.info('No updates found.');
+    console.log('Обновлений не найдено.');
     mainWindow.webContents.send('update-message', { msg: 'not-available' });
   });
 
   autoUpdater.on('error', (err) => {
-    log.error('Auto-updater error:', err);
-    mainWindow.webContents.send('update-message', { msg: 'error', error: err.message });
+    const errorMessage = err.message || 'Произошла неизвестная ошибка при попытке обновления.';
+    console.error('Ошибка автообновления:', err);
+    mainWindow.webContents.send('update-message', { msg: 'error', error: errorMessage });
   });
 
   autoUpdater.on('download-progress', (progressObj) => {
-    log.info(`Downloaded ${progressObj.percent}%`);
+    console.log(`Загружено ${progressObj.percent.toFixed(2)}%`);
     mainWindow.webContents.send('update-message', { msg: 'progress', progress: progressObj });
   });
 
   autoUpdater.on('update-downloaded', () => {
-    log.info('Update downloaded.');
+    console.log('Обновление загружено. Готово к установке.');
     mainWindow.webContents.send('update-message', { msg: 'downloaded' });
   });
 }
@@ -177,13 +186,13 @@ function createWindow() {
 function createTray() {
   tray = new Tray(path.join(__dirname, isDev ? '../public/favicon.ico' : '../build/favicon.ico'));
   const contextMenu = Menu.buildFromTemplate([
-    { label: 'Open UniSound', click: () => mainWindow?.show() },
+    { label: 'Открыть UniSound', click: () => mainWindow?.show() },
     { type: 'separator' },
-    { label: 'Play/Pause', click: () => mainWindow?.webContents.send('media-control-event', 'play-pause') },
-    { label: 'Next Track', click: () => mainWindow?.webContents.send('media-control-event', 'next') },
-    { label: 'Previous Track', click: () => mainWindow?.webContents.send('media-control-event', 'prev') },
+    { label: 'Воспроизвести/Пауза', click: () => mainWindow?.webContents.send('media-control-event', 'play-pause') },
+    { label: 'Следующий трек', click: () => mainWindow?.webContents.send('media-control-event', 'next') },
+    { label: 'Предыдущий трек', click: () => mainWindow?.webContents.send('media-control-event', 'prev') },
     { type: 'separator' },
-    { label: 'Exit', click: () => { app.isQuitting = true; app.quit(); } }
+    { label: 'Выход', click: () => { app.isQuitting = true; app.quit(); } }
   ]);
   tray.setToolTip('UniSound');
   tray.setContextMenu(contextMenu);
@@ -236,6 +245,7 @@ app.on('window-all-closed', () => {
 app.on('before-quit', () => app.isQuitting = true);
 app.on('will-quit', () => globalShortcut.unregisterAll());
 
+
 ipcMain.handle('window:minimize', () => BrowserWindow.getFocusedWindow()?.minimize());
 ipcMain.handle('window:maximize', () => {
   const win = BrowserWindow.getFocusedWindow();
@@ -258,8 +268,14 @@ ipcMain.on('maximize-window', () => {
 });
 ipcMain.on('close-window', () => mainWindow?.close());
 
-ipcMain.on('start-download', () => autoUpdater.downloadUpdate());
-ipcMain.on('quit-and-install', () => autoUpdater.quitAndInstall());
+ipcMain.on('start-download', () => {
+  console.log('Получена команда от React: начать загрузку.');
+  autoUpdater.downloadUpdate();
+});
+ipcMain.on('quit-and-install', () => {
+  console.log('Получена команда от React: перезапустить и установить.');
+  autoUpdater.quitAndInstall();
+});
 ipcMain.on('updater:restart-and-install', () => autoUpdater.quitAndInstall());
 
 ipcMain.on('karaoke:toggle', (event, shouldBeVisible) => {
@@ -296,17 +312,17 @@ ipcMain.on('media:update-controls', (event, data) => {
   
   const buttons = [
     {
-      tooltip: 'Previous Track',
+      tooltip: 'Предыдущий трек',
       icon: thumbarIcons.prev,
       click: () => mainWindow.webContents.send('media-control-event', 'prev'),
     },
     {
-      tooltip: isPlaying ? 'Pause' : 'Play',
+      tooltip: isPlaying ? 'Пауза' : 'Воспроизвести',
       icon: isPlaying ? thumbarIcons.pause : thumbarIcons.play,
       click: () => mainWindow.webContents.send('media-control-event', 'play-pause'),
     },
     {
-      tooltip: 'Next Track',
+      tooltip: 'Следующий трек',
       icon: thumbarIcons.next,
       click: () => mainWindow.webContents.send('media-control-event', 'next'),
     },
@@ -318,7 +334,7 @@ ipcMain.on('media:update-controls', (event, data) => {
     try {
       mainWindow.setThumbarButtons(buttons);
     } catch (error) {
-      console.error('Error setting thumbar buttons:', error);
+      console.error('Ошибка установки кнопок панели задач:', error);
     }
   }
 });
