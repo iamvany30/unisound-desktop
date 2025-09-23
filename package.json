@@ -3,7 +3,10 @@
   "version": "0.1.6",
   "private": true,
   "description": "Desktop music application built with React and Electron.",
-  "author": "iamvany20",
+  "author": {
+    "name": "iamvany20",
+    "email": "iamvany@vk.com"
+  },
   "license": "UNLICENSED",
   "homepage": "./",
   "main": "build/electron.js",
