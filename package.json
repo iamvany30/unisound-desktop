@@ -1,10 +1,23 @@
 {
-  "_comment_Identifier": "--- СЕКЦИЯ 1: ИДЕНТИФИКАЦИЯ ПРОЕКТА ---",
-
   "name": "unisound-react",
   "version": "0.1.7",
   "private": true,
   "description": "A cross-platform desktop music player built with React and Electron. Stream music from online sources or play your local files with a modern, dynamic interface.",
+  "author": {
+    "name": "iamvany20",
+    "email": "iamvany@vk.com",
+    "url": "https://github.com/iamvany30"
+  },
+  "license": "UNLICENSED",
+  "homepage": "./",
+  "main": "build/electron.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iamvany30/unisound-desktop.git"
+  },
+  "bugs": {
+    "url": "https://github.com/iamvany30/unisound-desktop/issues"
+  },
   "keywords": [
     "music",
     "player",
@@ -15,72 +28,19 @@
     "streaming",
     "unisound",
     "music-player",
-    "cross-platform",
-    "tailwindcss"
+    "cross-platform"
   ],
-
-  "_comment_PeopleAndLinks": "--- СЕКЦИЯ 2: ЛЮДИ И ССЫЛКИ ---",
-
-  "author": {
-    "name": "iamvany20",
-    "email": "iamvany@vk.com",
-    "url": "https://github.com/iamvany30"
-  },
-  "contributors": [],
-  "license": "UNLICENSED",
-  "homepage": "./",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/iamvany30/unisound-desktop.git"
-  },
-  "bugs": {
-    "url": "https://github.com/iamvany30/unisound-desktop/issues"
-  },
-  "funding": {
-    "type": "github",
-    "url": "https://github.com/sponsors/iamvany30"
-  },
-
-  "_comment_TechnicalInfo": "--- СЕКЦИЯ 3: ТЕХНИЧЕСКАЯ ИНФОРМАЦИЯ ---",
-
-  "main": "build/electron.js",
-  "files": [
-    "build/**/*"
-  ],
-
-  "_comment_Scripts": "--- СЕКЦИЯ 4: СКРИПТЫ ---",
-
   "scripts": {
-    "_comment": "Запуск React-приложения в режиме разработки.",
     "start": "react-scripts start",
-
-    "_comment": "Запуск Electron-обертки после того, как React-сервер запустится на порту 3000.",
-    "dev": "concurrently \"npm:start\" \"wait-on http://localhost:3000 && electron .\"",
-
-    "_comment": "Полная очистка сборочных директорий.",
+    "dev": "concurrently \"npm:start\" \"wait-on http://localhost:3000 && electron electron/electron.js\"",
     "clean": "rimraf dist build",
-
-    "_comment": "Сборка React-части проекта для продакшена.",
     "build:react": "react-scripts build",
-
-    "_comment": "Копирование файлов Electron в сборочную директорию.",
     "copy:electron": "copyfiles -u 1 electron/**/* build",
-
-    "_comment": "Полный цикл сборки приложения для текущей ОС.",
     "dist": "npm run clean && npm run build:react && npm run copy:electron && electron-builder",
-    
-    "_comment": "Сборка и немедленная публикация релиза на GitHub.",
     "release": "npm run dist -- --publish always",
-
-    "_comment": "Скрипт для генерации иконок разных размеров.",
     "icons": "python create_icons.py src/assets/logo.png assets",
-    
-    "_comment": "Автоматическая пересборка нативных зависимостей для Electron после установки пакетов.",
     "postinstall": "electron-builder install-app-deps"
   },
-
-  "_comment_Dependencies": "--- СЕКЦИЯ 5: ЗАВИСИМОСТИ ---",
-
   "dependencies": {
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.8.0",
@@ -117,19 +77,28 @@
     "tailwindcss": "^3.4.17",
     "wait-on": "^8.0.4"
   },
-
-  "_comment_Environment": "--- СЕКЦИЯ 6: ОГРАНИЧЕНИЯ СРЕДЫ ---",
-
   "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=9.0.0"
+    "node": ">=18.0.0"
   },
-  "os": [ "win32", "darwin", "linux" ],
-
-  "_comment_ElectronBuilder": "--- СЕКЦИЯ 7: КОНФИГУРАЦИЯ СБОРКИ (ELECTRON-BUILDER) ---",
-
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
   "build": {
-    "_comment": "--- Общие параметры для всех ОС ---",
     "appId": "com.unisound.app",
     "productName": "Unisound",
     "copyright": "Copyright © 2025 ${author}",
@@ -149,19 +118,12 @@
     },
     "fileAssociations": [
       {
-        "ext": ["mp3", "flac", "ogg", "wav", "m4a"],
+        "ext": ["mp3", "flac", "ogg", "wav"],
         "name": "Music File",
-        "description": "Open with Unisound",
         "role": "Viewer",
         "icon": "assets/file-icon.ico"
       }
     ],
-    "protocols": {
-      "name": "Unisound Protocol",
-      "schemes": ["unisound"]
-    },
-
-    "_comment": "--- Конфигурация для Windows ---",
     "win": {
       "target": "nsis",
       "icon": "assets/icon.ico",
@@ -174,55 +136,30 @@
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
       "runAfterFinish": true,
       "installerIcon": "assets/installerIcon.ico",
-      "uninstallerIcon": "assets/uninstallerIcon.ico",
       "license": "assets/license.txt"
     },
-
-    "_comment": "--- Конфигурация для macOS ---",
     "mac": {
       "target": "dmg",
       "icon": "assets/icon.icns",
-      "category": "public.app-category.music",
-      "darkModeSupport": true,
-      "minimumSystemVersion": "10.15.0"
+      "category": "public.app-category.music"
     },
-
-    "_comment": "--- Конфигурация для Linux ---",
     "linux": {
-      "target": ["AppImage", "deb", "rpm"],
+      "target": [
+        "AppImage",
+        "deb",
+        "rpm"
+      ],
       "icon": "assets/icon.png",
       "category": "AudioVideo;Audio",
       "description": "Desktop music application built with React and Electron.",
       "desktop": {
         "Name": "Unisound",
-        "GenericName": "Music Player",
+        "GenericName": "Unisound",
         "Comment": "Play your favorite music from local files or online sources.",
-        "MimeType": "audio/mpeg;audio/wav;audio/ogg;audio/flac;audio/mp4;"
+        "MimeType": "audio/mpeg;audio/wav;audio/ogg;audio/flac;"
       }
     }
-  },
-  
-  "_comment_OtherConfigs": "--- СЕКЦИЯ 8: ПРОЧИЕ КОНФИГУРАЦИИ ---",
-
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
   }
 }
