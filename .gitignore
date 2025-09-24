@@ -18,7 +18,6 @@ Thumbs.db
 .idea
 .vscode/
 
-# Файлы окружения (очень важно!)
 .env
 .env.local
 .env.development.local
