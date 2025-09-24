@@ -1,10 +1,10 @@
+
 const { contextBridge, ipcRenderer } = require('electron');
 
 const validSendChannels = [
   'minimize-window',
   'maximize-window',
   'close-window',
-  'start-download',
   'quit-and-install',
   'karaoke:toggle',
   'karaoke:update-data',
@@ -19,6 +19,15 @@ const validReceiveChannels = [
   'media-control-event'
 ];
 
+const validInvokeChannels = [
+    'window:minimize',
+    'window:maximize',
+    'window:close',
+    'window:get-initial-state',
+    'app:get-version',
+    'scan-music-library' 
+];
+
 const createEventHandler = (channel, callback) => {
   if (!validReceiveChannels.includes(channel)) return () => {};
   
@@ -28,59 +37,41 @@ const createEventHandler = (channel, callback) => {
 };
 
 contextBridge.exposeInMainWorld('electronAPI', {
-  minimizeWindow: () => {
-    if (validSendChannels.includes('minimize-window')) {
-      ipcRenderer.send('minimize-window');
-    }
-    return ipcRenderer.invoke('window:minimize');
-  },
-  
-  maximizeWindow: () => {
-    if (validSendChannels.includes('maximize-window')) {
-      ipcRenderer.send('maximize-window');
-    }
-    return ipcRenderer.invoke('window:maximize');
-  },
-  
-  closeWindow: () => {
-    if (validSendChannels.includes('close-window')) {
-      ipcRenderer.send('close-window');
-    }
-    return ipcRenderer.invoke('window:close');
-  },
+  minimizeWindow: () => ipcRenderer.invoke('window:minimize'),
+  maximizeWindow: () => ipcRenderer.invoke('window:maximize'),
+  closeWindow: () => ipcRenderer.invoke('window:close'),
   
   getWindowState: () => ipcRenderer.invoke('window:get-initial-state'),
-  getGpuStatus: () => ipcRenderer.invoke('app:get-gpu-status'),
   getAppVersion: () => ipcRenderer.invoke('app:get-version'),
-  
-  startDownload: () => {
-    if (validSendChannels.includes('start-download')) {
-      ipcRenderer.send('start-download');
-    }
-  },
   
   quitAndInstall: () => {
     if (validSendChannels.includes('quit-and-install')) {
       ipcRenderer.send('quit-and-install');
     }
   },
-  
+
   toggleKaraokeWindow: (shouldBeVisible) => {
     if (validSendChannels.includes('karaoke:toggle')) {
       ipcRenderer.send('karaoke:toggle', shouldBeVisible);
     }
   },
-  
   updateKaraokeData: (data) => {
     if (validSendChannels.includes('karaoke:update-data')) {
       ipcRenderer.send('karaoke:update-data', data);
     }
   },
-  
   updateMediaControls: (data) => {
     if (validSendChannels.includes('media:update-controls')) {
       ipcRenderer.send('media:update-controls', data);
     }
+  },
+
+  scanMusicLibrary: () => {
+    if (validInvokeChannels.includes('scan-music-library')) {
+      return ipcRenderer.invoke('scan-music-library');
+    }
+    console.warn('IPC канал "scan-music-library" не разрешен.');
+    return Promise.resolve([]); 
   },
   
   onUpdateMessage: (callback) => createEventHandler('update-message', callback),

@@ -1,6 +1,6 @@
 
 
-const API_BASE_URL = "109.120.139.163/api";
+const API_BASE_URL = "http://127.0.0.1:5000/api";
 const TELEGRAM_BOT_NAME = "UniSound_auth_bot";
 
 export { 

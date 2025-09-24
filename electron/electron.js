@@ -1,12 +1,12 @@
-// electron.js
 
-const { app, BrowserWindow, Menu, ipcMain, Tray, globalShortcut, shell, nativeImage, Notification } = require("electron"); // ИЗМЕНЕНИЕ: Добавлен Notification
+const { app, BrowserWindow, Menu, ipcMain, Tray, globalShortcut, shell, nativeImage, Notification } = require("electron");
 const path = require("path");
+const fs = require('fs/promises');
+const musicMetadata = require('music-metadata');
 const { default: Store } = require("electron-store");
 const { autoUpdater } = require("electron-updater");
 const log = require('electron-log');
 
-// --- НАСТРОЙКА ---
 app.commandLine.appendSwitch('enable-transparent-visuals');
 app.commandLine.appendSwitch('force-gpu-rasterization');
 app.commandLine.appendSwitch('ignore-gpu-blocklist');
@@ -17,15 +17,12 @@ let mainWindow;
 let tray;
 let karaokeWindow;
 
-// ИЗМЕНЕНИЕ: Определяем путь к иконке для уведомлений
 const iconPath = path.join(__dirname, isDev ? '../public/favicon.ico' : '../build/favicon.ico');
 
-// --- ЛОГИРОВАНИЕ ---
 log.transports.file.resolvePath = () => path.join(app.getPath('userData'), 'logs/main.log');
 log.transports.file.level = 'info';
 Object.assign(console, log.functions);
 
-// --- НАСТРОЙКА АВТООБНОВЛЕНИЯ ---
 autoUpdater.logger = log;
 autoUpdater.autoDownload = true;
 autoUpdater.autoInstallOnAppQuit = false;
@@ -37,19 +34,15 @@ if (!isDev) {
   });
 }
 
-// --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
 
-// ИЗМЕНЕНИЕ: Функция для показа системных уведомлений
 function showUpdateNotification(title, body) {
   if (Notification.isSupported()) {
     const notification = new Notification({
       title,
       body,
       icon: iconPath,
-      silent: false // Уведомление будет со звуком (по умолчанию)
+      silent: false
     });
-
-    // По клику на уведомление делаем окно приложения активным
     notification.on('click', () => {
       if (mainWindow) {
         if (!mainWindow.isVisible()) mainWindow.show();
@@ -57,65 +50,31 @@ function showUpdateNotification(title, body) {
         mainWindow.focus();
       }
     });
-
     notification.show();
   }
 }
 
-
-const createThumbarIcon = (iconName) => {
-  const iconPath = path.join(__dirname, `../src/assets/icons/${iconName}.png`);
-  try {
-    const image = nativeImage.createFromPath(iconPath);
-    if (image.isEmpty()) {
-      console.error(`Ошибка загрузки иконки: ${iconName}. Путь: ${iconPath}`);
-      return null;
+async function scanForMusic(directory) {
+    let musicFiles = [];
+    const supportedExtensions = ['.mp3', '.flac', '.wav', '.ogg', '.m4a', '.aac'];
+    try {
+        const items = await fs.readdir(directory, { withFileTypes: true });
+        for (const item of items) {
+            const fullPath = path.join(directory, item.name);
+            if (item.isDirectory()) {
+                if (!item.name.startsWith('.')) {
+                    musicFiles = musicFiles.concat(await scanForMusic(fullPath));
+                }
+            } else if (supportedExtensions.includes(path.extname(item.name).toLowerCase())) {
+                musicFiles.push(fullPath);
+            }
+        }
+    } catch (error) {
+        console.warn(`Ошибка при сканировании директории ${directory}:`, error.message);
     }
-    return image;
-  } catch (error) {
-    console.error(`Критическая ошибка загрузки иконки "${iconName}":`, error);
-    return null;
-  }
-};
-
-const thumbarIcons = {
-  play: createThumbarIcon('play'),
-  pause: createThumbarIcon('pause'),
-  next: createThumbarIcon('next'),
-  prev: createThumbarIcon('prev')
-};
-
-function createKaraokeWindow() {
-  if (karaokeWindow) {
-    karaokeWindow.focus();
-    return;
-  }
-  karaokeWindow = new BrowserWindow({
-    width: 500,
-    height: 650,
-    minWidth: 320,
-    minHeight: 400,
-    frame: false,
-    transparent: true,
-    alwaysOnTop: true,
-    skipTaskbar: true,
-    show: false,
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      preload: path.join(__dirname, "preload.js"),
-    },
-    parent: mainWindow,
-  });
-  const startUrl = isDev ? "http://localhost:3000/#/karaoke" : `file://${path.join(__dirname, "../build/index.html")}#/karaoke`;
-  karaokeWindow.loadURL(startUrl);
-  karaokeWindow.on('closed', () => {
-    karaokeWindow = null;
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('karaoke-window-closed');
-    }
-  });
+    return musicFiles;
 }
+
 
 function createWindow() {
   console.log('Создание главного окна приложения...');
@@ -130,12 +89,14 @@ function createWindow() {
     transparent: true,
     backgroundColor: '#00000000',
     show: !process.argv.includes('--hidden'),
+    hasShadow: false,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
       nodeIntegration: false,
+      webSecurity: false,
     },
-    icon: iconPath, // Используем константу
+    icon: iconPath,
   });
 
   const startUrl = isDev ? "http://localhost:3000" : `file://${path.join(__dirname, "../build/index.html")}`;
@@ -181,42 +142,18 @@ function createWindow() {
     return { action: 'deny' };
   });
 
-  // --- ОБРАБОТЧИКИ СОБЫТИЙ AUTOUPDATER ---
-  autoUpdater.on('checking-for-update', () => {
-    console.log('Проверка обновлений...');
-    if (mainWindow) mainWindow.webContents.send('update-message', { msg: 'checking' });
-  });
   autoUpdater.on('update-available', (info) => {
-    console.log('Доступно обновление:', info);
     if (mainWindow) mainWindow.webContents.send('update-message', { msg: 'available', info });
-    // ИЗМЕНЕНИЕ: Показываем системное уведомление о найденном обновлении
     showUpdateNotification('Доступно обновление!', `Версия ${info.version} будет загружена в фоновом режиме.`);
   });
-  autoUpdater.on('update-not-available', () => {
-    console.log('Обновлений не найдено.');
-    if (mainWindow) mainWindow.webContents.send('update-message', { msg: 'not-available' });
-  });
-  autoUpdater.on('error', (err) => {
-    const errorMessage = err.message || 'Произошла неизвестная ошибка при попытке обновления.';
-    console.error('Ошибка автообновления:', err);
-    if (mainWindow) mainWindow.webContents.send('update-message', { msg: 'error', error: errorMessage });
-    // ИЗМЕНЕНИЕ: Показываем системное уведомление об ошибке
-    showUpdateNotification('Ошибка обновления', 'Не удалось загрузить новую версию. Повторная попытка будет позже.');
-  });
-  autoUpdater.on('download-progress', (progressObj) => {
-    console.log(`Загружено ${progressObj.percent.toFixed(2)}%`);
-    if (mainWindow) mainWindow.webContents.send('update-message', { msg: 'progress', progress: progressObj });
-  });
   autoUpdater.on('update-downloaded', () => {
-    console.log('Обновление загружено. Готово к установке.');
     if (mainWindow) mainWindow.webContents.send('update-message', { msg: 'downloaded' });
-    // ИЗМЕНЕНИЕ: Показываем системное уведомление о готовности к установке
     showUpdateNotification('Обновление готово!', 'Новая версия загружена. Перезапустите приложение, чтобы ее установить.');
   });
 }
 
 function createTray() {
-  tray = new Tray(iconPath); // Используем константу
+  tray = new Tray(iconPath);
   const contextMenu = Menu.buildFromTemplate([
     { label: 'Открыть UniSound', click: () => mainWindow?.show() },
     { type: 'separator' },
@@ -237,7 +174,7 @@ const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
   app.quit();
 } else {
-  app.on('second-instance', (event, commandLine) => {
+  app.on('second-instance', () => {
     if (mainWindow) {
       if (!mainWindow.isVisible()) mainWindow.show();
       if (mainWindow.isMinimized()) mainWindow.restore();
@@ -250,14 +187,8 @@ app.on('ready', () => {
   setTimeout(createWindow, 100);
   createTray();
   if (!isDev) {
-    setTimeout(() => {
-      console.log('Первоначальная проверка обновлений...');
-      autoUpdater.checkForUpdates();
-    }, 60 * 1000);
-    setInterval(() => {
-      console.log('Плановая проверка обновлений (каждые 15 минут)...');
-      autoUpdater.checkForUpdates();
-    }, 15 * 60 * 1000);
+    setTimeout(() => autoUpdater.checkForUpdates(), 60 * 1000);
+    setInterval(() => autoUpdater.checkForUpdates(), 15 * 60 * 1000);
   }
   globalShortcut.register('MediaPlayPause', () => mainWindow?.webContents.send('media-control-event', 'play-pause'));
   globalShortcut.register('MediaNextTrack', () => mainWindow?.webContents.send('media-control-event', 'next'));
@@ -275,6 +206,7 @@ app.on('window-all-closed', () => {
 app.on('before-quit', () => app.isQuitting = true);
 app.on('will-quit', () => globalShortcut.unregisterAll());
 
+
 ipcMain.handle('window:minimize', () => BrowserWindow.getFocusedWindow()?.minimize());
 ipcMain.handle('window:maximize', () => {
   const win = BrowserWindow.getFocusedWindow();
@@ -284,63 +216,45 @@ ipcMain.handle('window:close', () => BrowserWindow.getFocusedWindow()?.close());
 ipcMain.handle('window:get-initial-state', (e) => ({
   isMaximized: BrowserWindow.fromWebContents(e.sender)?.isMaximized() || false
 }));
+
 ipcMain.handle('app:get-version', () => app.getVersion());
 
-ipcMain.on('minimize-window', () => mainWindow?.minimize());
-ipcMain.on('maximize-window', () => {
-  if (mainWindow?.isMaximized()) {
-    mainWindow.unmaximize();
-  } else {
-    mainWindow?.maximize();
-  }
-});
-ipcMain.on('close-window', () => mainWindow?.close());
-
 ipcMain.on('quit-and-install', () => {
-  console.log('Получена команда от React: перезапустить и установить.');
+  console.log('Получена команда: перезапустить и установить.');
   autoUpdater.quitAndInstall();
 });
 
-ipcMain.on('karaoke:toggle', (event, shouldBeVisible) => {
-  if (shouldBeVisible) {
-    if (!karaokeWindow) {
-      createKaraokeWindow();
-    }
-    setTimeout(() => {
-      karaokeWindow?.show();
-    }, 150);
-  } else {
-    karaokeWindow?.close();
-  }
-});
-
-ipcMain.on('karaoke:update-data', (event, data) => {
-  if (karaokeWindow && !karaokeWindow.isDestroyed()) {
-    karaokeWindow.webContents.send('player-state-update', data);
-  }
-});
-
-ipcMain.on('media:update-controls', (event, data) => {
-  if (!mainWindow) return;
-  if (!data) {
-    mainWindow.setTitle('UniSound');
-    mainWindow.setThumbarButtons([]);
-    return;
-  }
-  const { title, artist, isPlaying } = data;
-  mainWindow.setTitle(`${title} - ${artist}`);
-  const buttons = [
-    { tooltip: 'Предыдущий трек', icon: thumbarIcons.prev, click: () => mainWindow.webContents.send('media-control-event', 'prev') },
-    { tooltip: isPlaying ? 'Пауза' : 'Воспроизвести', icon: isPlaying ? thumbarIcons.pause : thumbarIcons.play, click: () => mainWindow.webContents.send('media-control-event', 'play-pause') },
-    { tooltip: 'Следующий трек', icon: thumbarIcons.next, click: () => mainWindow.webContents.send('media-control-event', 'next') },
-  ].filter(btn => btn.icon);
-  if (buttons.length < 3) {
-    mainWindow.setThumbarButtons([]);
-  } else {
-    try {
-      mainWindow.setThumbarButtons(buttons);
-    } catch (error) {
-      console.error('Ошибка установки кнопок панели задач:', error);
-    }
-  }
+ipcMain.handle('scan-music-library', async () => {
+    const musicDir = app.getPath('music');
+    console.log(`[Offline Mode] Начинаем сканирование директории: ${musicDir}`);
+    
+    const filePaths = await scanForMusic(musicDir);
+    
+    const tracksWithMetadata = await Promise.all(
+        filePaths.map(async (filePath) => {
+            try {
+                const metadata = await musicMetadata.parseFile(filePath);
+                const cover = musicMetadata.selectCover(metadata.common.picture);
+                
+                return {
+                    uuid: `local-${Buffer.from(filePath).toString('hex')}`,
+                    filePath: filePath,
+                    title: metadata.common.title || path.basename(filePath, path.extname(filePath)),
+                    artist: metadata.common.artist || 'Неизвестный исполнитель',
+                    album: metadata.common.album || 'Неизвестный альбом',
+                    year: metadata.common.year,
+                    duration: metadata.format.duration,
+                    artwork: cover ? `data:${cover.format};base64,${cover.data.toString('base64')}` : null,
+                    isLocal: true,
+                };
+            } catch (error) {
+                console.warn(`Не удалось обработать файл ${filePath}:`, error.message);
+                return null;
+            }
+        })
+    );
+    
+    const validTracks = tracksWithMetadata.filter(track => track !== null);
+    console.log(`[Offline Mode] Сканирование завершено. Найдено ${validTracks.length} треков.`);
+    return validTracks;
 });

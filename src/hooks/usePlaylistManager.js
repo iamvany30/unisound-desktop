@@ -1,7 +1,5 @@
-
 import { useState, useCallback, useMemo } from 'react';
 import api from '../services/api';
-
 
 export const usePlaylistManager = () => {
     const [playlist, setPlaylist] = useState([]);
@@ -12,15 +10,6 @@ export const usePlaylistManager = () => {
         playlist[currentTrackIndex] || null, 
         [playlist, currentTrackIndex]
     );
-
-    const currentTrackUuid = currentTrack?.uuid;
-
-    const nextTrackInfo = useMemo(() => {
-        const nextTrackIndex = (currentTrackIndex + 1) % playlist.length;
-        const hasNext = playlist.length > 1 && (repeatMode !== 'off' || nextTrackIndex > currentTrackIndex);
-        const nextTrack = hasNext ? playlist[nextTrackIndex] : null;
-        return { nextTrackIndex, hasNext, nextTrack };
-    }, [currentTrackIndex, playlist, repeatMode]);
 
     const canGoNext = useCallback(() => {
         if (playlist.length === 0) return false;
@@ -34,7 +23,6 @@ export const usePlaylistManager = () => {
 
     const goToNext = useCallback(() => {
         if (!canGoNext()) return false;
-        
         const nextTrackIndex = (currentTrackIndex + 1) % playlist.length;
         setCurrentTrackIndex(nextTrackIndex);
         return true;
@@ -42,7 +30,6 @@ export const usePlaylistManager = () => {
 
     const goToPrev = useCallback(() => {
         if (!canGoPrev()) return false;
-        
         setCurrentTrackIndex(prevIndex => prevIndex - 1);
         return true;
     }, [canGoPrev]);
@@ -52,16 +39,17 @@ export const usePlaylistManager = () => {
         setCurrentTrackIndex(startIndex);
     }, []);
 
-    const addTrackToPlaylist = useCallback((track) => {
-        setPlaylist(prev => {
-            const exists = prev.find(t => t.uuid === track.uuid);
-            return exists ? prev : [...prev, track];
-        });
-    }, []);
-
     const playTrackFromPlaylist = useCallback(async (track, trackList = []) => {
-        console.log(`[PlaylistManager] playTrack called for "${track.title}".`);
-        
+        if (track.isLocal) {
+            console.log(`[PlaylistManager] Playing local track: "${track.title}"`);
+            const newPlaylist = trackList.length > 0 ? trackList : [track];
+            setPlaylist(newPlaylist);
+            const trackIndex = newPlaylist.findIndex(t => t.uuid === track.uuid);
+            setCurrentTrackIndex(trackIndex !== -1 ? trackIndex : 0);
+            return true;
+        }
+
+        console.log(`[PlaylistManager] Fetching fresh data for online track: "${track.title}"`);
         try {
             const freshTrackData = await api.tracks.getDetails(track.uuid);
             const newPlaylist = (trackList.length > 0 ? trackList : [track]).map(t => 
@@ -94,16 +82,13 @@ export const usePlaylistManager = () => {
     return {
         playlist,
         currentTrack,
-        currentTrackUuid,
         currentTrackIndex,
         repeatMode,
-        nextTrackInfo,
         canGoNext,
         canGoPrev,
         goToNext,
         goToPrev,
         setTrackList,
-        addTrackToPlaylist,
         playTrackFromPlaylist,
         toggleRepeat,
         clearPlaylist

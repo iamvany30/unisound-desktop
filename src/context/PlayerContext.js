@@ -1,5 +1,3 @@
-
-
 import React, {
     createContext,
     useState,
@@ -11,8 +9,6 @@ import React, {
 } from 'react';
 import Hls from 'hls.js';
 import api from '../services/api';
-
-
 import { usePlaylistManager } from '../hooks/usePlaylistManager';
 import { useWaveManager } from '../hooks/useWaveManager';
 import { useMediaSessionManager } from '../hooks/useMediaSessionManager';
@@ -51,7 +47,6 @@ export const PlayerProvider = ({ children }) => {
     const playlistManager = usePlaylistManager();
     const waveManager = useWaveManager(playlistManager);
 
-    
     const [playerState, setPlayerState] = useState(PLAYER_STATES.IDLE);
     const [progress, setProgress] = useState(0);
     const [duration, setDuration] = useState(0);
@@ -61,17 +56,15 @@ export const PlayerProvider = ({ children }) => {
     const [error, setError] = useState(null);
     const [isNowPlayingOpen, setIsNowPlayingOpen] = useState(false);
     const [isLyricsVisible, setIsLyricsVisible] = useState(false);
-
     const [shouldAutoplay, setShouldAutoplay] = useState(false);
 
-    
     const audioRef = useRef(new Audio());
     const hlsRef = useRef(null);
     const audioContextRef = useRef(null);
     const analyserRef = useRef(null);
     const sourceNodeRef = useRef(null);
     const progressUpdateIntervalRef = useRef(null);
-    const isSeekingRef = useRef(false); 
+    const isSeekingRef = useRef(false);
 
     const { currentTrack: rawCurrentTrack } = playlistManager;
     const currentTrack = useMemo(() => processTrackData(rawCurrentTrack), [rawCurrentTrack]);
@@ -113,25 +106,35 @@ export const PlayerProvider = ({ children }) => {
         isSeekingRef.current = false;
         if (progressUpdateIntervalRef.current) clearInterval(progressUpdateIntervalRef.current);
         cleanupHls();
+        
         const audio = audioRef.current;
-        if (!track || (!track.hls_url && !track.filename)) {
+        if (!track) {
             audio.src = "";
             setPlayerState(PLAYER_STATES.IDLE);
             return;
         }
+
         setPlayerState(PLAYER_STATES.LOADING);
-        const { hls_url, filename } = track;
-        if (hls_url && Hls.isSupported()) {
+
+        if (track.isLocal && track.filePath) {
+            const encodedPath = encodeURI(track.filePath.replace(/\\/g, '/'));
+            audio.src = `file://${encodedPath}`;
+        } else if (track.hls_url && Hls.isSupported()) {
             const token = localStorage.getItem('unisound_token');
             const hls = new Hls({ xhrSetup: (xhr) => { if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`); } });
             hlsRef.current = hls;
-            hls.on(Hls.Events.ERROR, (event, data) => { if (data.fatal) setPlayerState(PLAYER_STATES.ERROR); });
-            hls.loadSource(hls_url);
+            hls.on(Hls.Events.ERROR, (event, data) => { if (data.fatal) {
+                console.error('HLS Fatal Error:', data);
+                setPlayerState(PLAYER_STATES.ERROR);
+                setError('Ошибка при загрузке потока.');
+            }});
+            hls.loadSource(track.hls_url);
             hls.attachMedia(audio);
-        } else if (filename) {
-            audio.src = api.player.getStreamUrl(filename);
+        } else if (track.filename) {
+            audio.src = api.player.getStreamUrl(track.filename);
         } else {
             setPlayerState(PLAYER_STATES.ERROR);
+            setError('Не найден источник для воспроизведения трека.');
             return;
         }
         audio.load();
@@ -164,8 +167,9 @@ export const PlayerProvider = ({ children }) => {
 
     const playTrack = useCallback((track, trackList = []) => {
         setShouldAutoplay(true);
+        if(waveManager.isWaveMode) waveManager.stopWave();
         playlistManager.playTrackFromPlaylist(track, trackList);
-    }, [playlistManager]);
+    }, [playlistManager, waveManager]);
 
     const play = useCallback(async () => {
          if (!currentTrack) return;
@@ -173,7 +177,9 @@ export const PlayerProvider = ({ children }) => {
              if (!audioContextRef.current) initAudioContext();
              await audioRef.current.play();
          } catch (error) {
+             console.error("Playback Error:", error);
              setPlayerState(PLAYER_STATES.ERROR);
+             setError(`Ошибка воспроизведения: ${error.message}`);
          }
     }, [currentTrack, initAudioContext]);
 
@@ -188,19 +194,19 @@ export const PlayerProvider = ({ children }) => {
             play();
         }
     }, [isPlaying, pause, play]);
-
     
     const seek = useCallback((time) => {
-        if (isFinite(time) && audioRef.current.duration) {
-            isSeekingRef.current = true; 
-            setProgress(time); 
-            audioRef.current.currentTime = time; 
+        const audio = audioRef.current;
+        if (isFinite(time) && audio.duration) {
+            const newTime = Math.max(0, Math.min(time, audio.duration));
+            isSeekingRef.current = true;
+            setProgress(newTime);
+            audio.currentTime = newTime;
         }
     }, []);
 
     useEffect(() => {
         const audio = audioRef.current;
-
         const handleEnded = () => {
             if (playlistManager.repeatMode === 'one') {
                 audio.currentTime = 0;
@@ -209,7 +215,6 @@ export const PlayerProvider = ({ children }) => {
                 playNext();
             }
         };
-
         const handleCanPlay = () => {
             setPlayerState(PLAYER_STATES.READY);
             if (shouldAutoplay) {
@@ -217,20 +222,15 @@ export const PlayerProvider = ({ children }) => {
                 setShouldAutoplay(false);
             }
         };
-
-        
         const handlePlaying = () => {
             setPlayerState(PLAYER_STATES.PLAYING);
             if (progressUpdateIntervalRef.current) clearInterval(progressUpdateIntervalRef.current);
             progressUpdateIntervalRef.current = setInterval(() => {
-                
                 if (!isSeekingRef.current) {
                     setProgress(audio.currentTime);
                 }
             }, 250);
         };
-
-        
         const handlePause = () => {
             setPlayerState(PLAYER_STATES.PAUSED);
             if (progressUpdateIntervalRef.current) {
@@ -238,16 +238,13 @@ export const PlayerProvider = ({ children }) => {
                 progressUpdateIntervalRef.current = null;
             }
         };
-
         const handleWaiting = () => setPlayerState(PLAYER_STATES.LOADING);
-        const handleError = () => setPlayerState(PLAYER_STATES.ERROR);
-        const handleLoadedMetadata = () => setDuration(audio.duration);
-        
-        
-        const handleSeeked = () => {
-            isSeekingRef.current = false;
+        const handleError = (e) => {
+            setPlayerState(PLAYER_STATES.ERROR);
+            setError(`Ошибка аудио: ${e.target.error?.message || 'Неизвестная ошибка'}`);
         };
-        
+        const handleLoadedMetadata = () => setDuration(audio.duration);
+        const handleSeeked = () => isSeekingRef.current = false;
         
         audio.addEventListener('ended', handleEnded);
         audio.addEventListener('canplay', handleCanPlay);
@@ -275,11 +272,13 @@ export const PlayerProvider = ({ children }) => {
         setIsMuted(newVolume === 0);
         setVolume(newVolume);
     }, []);
+
     const toggleMute = useCallback(() => {
         setIsMuted(prev => !prev);
     }, []);
+
     const toggleLike = useCallback(async () => {
-        if (!currentTrack) return;
+        if (!currentTrack || currentTrack.isLocal) return;
         const wasLiked = isCurrentTrackLiked;
         setIsCurrentTrackLiked(!wasLiked);
         try {
@@ -289,6 +288,7 @@ export const PlayerProvider = ({ children }) => {
             setIsCurrentTrackLiked(wasLiked);
         }
     }, [isCurrentTrackLiked, currentTrack]);
+
     const toggleLyricsWindow = useCallback(() => {
         setIsLyricsVisible(prev => {
             window.electronAPI?.toggleKaraokeWindow?.(!prev);
@@ -299,10 +299,9 @@ export const PlayerProvider = ({ children }) => {
     useEffect(() => { audioRef.current.volume = isMuted ? 0 : volume; }, [volume, isMuted]);
     useEffect(() => { if (!isMuted) saveToLocalStorage('player_volume', volume); }, [volume, isMuted]);
 
-    
     useEffect(() => {
         const checkLikeStatus = async () => {
-            if (!currentTrack?.uuid) {
+            if (!currentTrack?.uuid || currentTrack.isLocal) {
                 setIsCurrentTrackLiked(false);
                 return;
             }
@@ -310,12 +309,11 @@ export const PlayerProvider = ({ children }) => {
                 const { is_liked } = await api.tracks.getInteractionStatus(currentTrack.uuid);
                 setIsCurrentTrackLiked(is_liked);
             } catch (error) {
-                console.error("Failed to get track interaction status:", error);
                 setIsCurrentTrackLiked(false);
             }
         };
         checkLikeStatus();
-    }, [currentTrack?.uuid]);
+    }, [currentTrack?.uuid, currentTrack?.isLocal]);
 
     useEffect(() => {
         const token = localStorage.getItem('unisound_token');
@@ -328,21 +326,18 @@ export const PlayerProvider = ({ children }) => {
     }, [currentTrack, progress, isPlaying]);
 
     useEffect(() => {
-        const unsubscribe = window.electronAPI?.onKaraokeWindowClosed?.(() => {
-            setIsLyricsVisible(false);
-        });
+        const unsubscribe = window.electronAPI?.onKaraokeWindowClosed?.(() => setIsLyricsVisible(false));
         return () => unsubscribe?.();
     }, []);
 
      useEffect(() => {
         if (window.electronAPI?.updateMediaControls) {
             if (currentTrack) {
-                const mediaData = {
+                window.electronAPI.updateMediaControls({
                     title: currentTrack.title,
                     artist: currentTrack.primaryArtistName || 'Unknown Artist',
                     isPlaying: isPlaying
-                };
-                window.electronAPI.updateMediaControls(mediaData);
+                });
             } else {
                 window.electronAPI.updateMediaControls(null);
             }
@@ -352,17 +347,10 @@ export const PlayerProvider = ({ children }) => {
     useEffect(() => {
         const unsubscribe = window.electronAPI?.onMediaControlEvent?.((action) => {
             switch (action) {
-                case 'play-pause':
-                    togglePlay();
-                    break;
-                case 'next':
-                    playNext();
-                    break;
-                case 'prev':
-                    playPrev();
-                    break;
-                default:
-                    break;
+                case 'play-pause': togglePlay(); break;
+                case 'next': playNext(); break;
+                case 'prev': playPrev(); break;
+                default: break;
             }
         });
         return () => unsubscribe?.();
@@ -370,9 +358,7 @@ export const PlayerProvider = ({ children }) => {
 
     useEffect(() => {
         return () => {
-            if (progressUpdateIntervalRef.current) {
-                clearInterval(progressUpdateIntervalRef.current);
-            }
+            if (progressUpdateIntervalRef.current) clearInterval(progressUpdateIntervalRef.current);
             cleanupHls();
             if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
                 audioContextRef.current.close().catch(console.error);
@@ -402,8 +388,6 @@ export const PlayerProvider = ({ children }) => {
         canGoPrev: playlistManager.canGoPrev(),
         clearPlaylist: playlistManager.clearPlaylist,
         retry: () => loadTrack(currentTrack),
-        getCurrentTime: () => audioRef.current.currentTime,
-        getDuration: () => audioRef.current.duration || duration,
     }), [
         currentTrack, isPlaying, isLoading, playerState, progress, duration,
         volume, isMuted, isCurrentTrackLiked, error, isNowPlayingOpen, isLyricsVisible,

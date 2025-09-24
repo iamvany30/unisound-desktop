@@ -3,7 +3,6 @@ import { useAuth } from '../hooks/useAuth';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { TELEGRAM_BOT_NAME } from '../config';
-
 import AuthLayout from '../components/Auth/AuthLayout';
 import AuthForm from '../components/Auth/AuthForm';
 import TelegramLoginButton from '../components/Auth/TelegramLoginButton';
@@ -33,9 +32,7 @@ const LoginPage = () => {
     };
     
     return (
-        <AuthLayout 
-           
-        >
+        <AuthLayout>
             <AuthForm
                 formType="login"
                 onSubmit={handleLogin}

@@ -1,10 +1,6 @@
-
-
-
-import React, { Suspense, memo, useEffect, useState, useMemo, useCallback } from 'react';
+import React, { Suspense, memo, useEffect, useState, useCallback } from 'react';
 import { HashRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { LoaderCircle, Shield, AlertCircle } from 'lucide-react';
-
 
 import { AuthProvider } from './context/AuthContext';
 import { PlayerProvider } from './context/PlayerContext';
@@ -14,20 +10,17 @@ import { useAuth } from './hooks/useAuth';
 import { useElectronWindow } from './hooks/useElectronWindow';
 import api from './services/api';
 
-
 import Header from './components/Common/Header';
 import Footer from './components/Common/Footer';
 import WindowControls from './components/Common/WindowControls';
 import KaraokePanel from './components/Player/KaraokePanel';
-import AppLoader from './components/Common/AppLoader'; 
+import AppLoader from './components/Common/AppLoader';
 import UpdateNotification from './components/Common/UpdateNotification';
-
+import GlobalDragZone from './components/Common/GlobalDragZone';
 
 import './index.css';
 
-
 const loadPage = (importFunc) => React.lazy(importFunc);
-
 
 const pageImportFactories = [
   () => import('./pages/HomePage'),
@@ -38,8 +31,8 @@ const pageImportFactories = [
   () => import('./pages/TrackDetailPage'),
   () => import('./pages/ArtistPage'),
   () => import('./pages/AdminPage/AdminPage'),
+  () => import('./pages/LocalLibraryPage'),
 ];
-
 
 const HomePage = loadPage(pageImportFactories[0]);
 const LoginPage = loadPage(pageImportFactories[1]);
@@ -49,14 +42,9 @@ const SettingsPage = loadPage(pageImportFactories[4]);
 const TrackDetailPage = loadPage(pageImportFactories[5]);
 const ArtistPage = loadPage(pageImportFactories[6]);
 const AdminPage = loadPage(pageImportFactories[7]);
-
-
-
-
-
+const LocalLibraryPage = loadPage(pageImportFactories[8]); 
 const SilentLoader = memo(() => null);
 SilentLoader.displayName = "SilentLoader";
-
 
 const AppPreparationGate = memo(({ children }) => {
     const [isReady, setIsReady] = useState(false);
@@ -70,8 +58,6 @@ const AppPreparationGate = memo(({ children }) => {
             
             setProgress(10);
             setStatusText('Загрузка компонентов...');
-            
-            
             
             await Promise.all(pageImportFactories.map(factory => factory()));
             console.log('[AppLoader] Все бандлы страниц загружены.');
@@ -90,7 +76,6 @@ const AppPreparationGate = memo(({ children }) => {
             setProgress(90);
             setStatusText('Завершение...');
             await new Promise(resolve => setTimeout(resolve, 500));
-
             setProgress(100);
             
             setTimeout(() => setIsReady(true), 400); 
@@ -108,11 +93,8 @@ const AppPreparationGate = memo(({ children }) => {
 AppPreparationGate.displayName = "AppPreparationGate";
 
 const AppLayout = memo(() => {
-    const { isElectron } = useElectronWindow();
-    
     return (
         <div className="app-wrapper">
-            {isElectron && <WindowControls />}
             <div className="app-background-mica" />
             <div className="app-container">
                 <Header />
@@ -127,6 +109,61 @@ const AppLayout = memo(() => {
 AppLayout.displayName = "AppLayout";
 
 
+const MainContentSelector = () => {
+    const { isOfflineMode } = useAuth();
+    return isOfflineMode ? <LocalLibraryPage /> : <HomePage />;
+};
+
+const ProtectedRoutesLayout = memo(() => {
+    const { token, loading, user, isOfflineMode } = useAuth();
+    useRouteChange();
+
+    if (loading) return <PageLoader message="Проверка авторизации..." />;
+
+    if (!token && !isOfflineMode) {
+        return <Navigate to="/login" replace state={{ from: window.location.hash }} />;
+    }
+
+    if (user?.is_blocked) {
+        return (
+            <div className="fullscreen-message error">
+                <Shield size={48} />
+                <h2>Аккаунт заблокирован</h2>
+                <p>Ваш аккаунт был заблокирован. Обратитесь к администратору.</p>
+            </div>
+        );
+    }
+    return <Outlet />;
+});
+ProtectedRoutesLayout.displayName = "ProtectedRoutesLayout";
+
+const AdminRoutesLayout = memo(() => {
+    const { user, loading, isOfflineMode } = useAuth();
+    if (loading) return <PageLoader message="Проверка прав доступа..." />;
+    
+    if (isOfflineMode || !user?.is_superuser) {
+        return (
+            <div className="fullscreen-message error">
+                <Shield size={48} />
+                <h2>Доступ запрещен</h2>
+                <p>У вас нет прав для просмотра этой страницы или вы находитесь в оффлайн-режиме.</p>
+            </div>
+        );
+    }
+    return <Outlet />;
+});
+AdminRoutesLayout.displayName = "AdminRoutesLayout";
+
+const PublicRoutesLayout = memo(() => {
+    const { token, loading } = useAuth();
+    useRouteChange();
+    if (loading) return <PageLoader message="Инициализация..." />;
+    if (token) return <Navigate to="/" replace />; 
+    return <Outlet />;
+});
+PublicRoutesLayout.displayName = "PublicRoutesLayout";
+
+
 const AppRoutes = memo(() => {
     const { checkStatus } = useStatus();
     useEffect(() => { checkStatus().catch(console.warn); }, [checkStatus]);
@@ -134,13 +171,15 @@ const AppRoutes = memo(() => {
     return (
         <Routes>
             <Route path="/karaoke" element={<KaraokeApp />} />
+            
             <Route element={<PublicRoutesLayout />}>
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
             </Route>
+
             <Route path="/" element={<AppLayout />}>
                 <Route element={<ProtectedRoutesLayout />}>
-                    <Route index element={<HomePage />} />
+                    <Route index element={<MainContentSelector />} /> 
                     <Route path="profile" element={<ProfilePage />} />
                     <Route path="settings" element={<SettingsPage />} />
                     <Route path="tracks/:trackUuid" element={<TrackDetailPage />} />
@@ -157,49 +196,6 @@ const AppRoutes = memo(() => {
 AppRoutes.displayName = "AppRoutes";
 
 
-const ProtectedRoutesLayout = memo(() => {
-    const { token, loading, user } = useAuth();
-    useRouteChange();
-    if (loading) return <PageLoader message="Проверка авторизации..." />;
-    if (!token) return <Navigate to="/login" replace state={{ from: window.location.hash }} />;
-    if (user?.is_blocked) {
-        return (
-            <div className="fullscreen-message error">
-                <Shield size={48} />
-                <h2>Аккаунт заблокирован</h2>
-                <p>Ваш аккаунт был заблокирован. Обратитесь к администратору.</p>
-            </div>
-        );
-    }
-    return <Outlet />;
-});
-ProtectedRoutesLayout.displayName = "ProtectedRoutesLayout";
-
-const AdminRoutesLayout = memo(() => {
-    const { user, loading } = useAuth();
-    if (loading) return <PageLoader message="Проверка прав доступа..." />;
-    if (!user?.is_superuser) {
-        return (
-            <div className="fullscreen-message error">
-                <Shield size={48} />
-                <h2>Доступ запрещен</h2>
-                <p>У вас нет прав администратора для просмотра этой страницы.</p>
-            </div>
-        );
-    }
-    return <Outlet />;
-});
-AdminRoutesLayout.displayName = "AdminRoutesLayout";
-
-const PublicRoutesLayout = memo(() => {
-    const { token, loading } = useAuth();
-    useRouteChange();
-    if (loading) return <PageLoader message="Инициализация..." />;
-    if (token) return <Navigate to="/" replace />;
-    return <Outlet />;
-});
-PublicRoutesLayout.displayName = "PublicRoutesLayout";
-
 const AppProviders = memo(({ children }) => (
     <StatusProvider>
         <AuthProvider>
@@ -211,7 +207,6 @@ const AppProviders = memo(({ children }) => (
 ));
 AppProviders.displayName = "AppProviders";
 
-
 const App = memo(() => (
     <HashRouter>
         <Suspense fallback={<SilentLoader />}>
@@ -222,35 +217,19 @@ const App = memo(() => (
 App.displayName = "App";
 
 const AppWrapper = memo(() => {
-
-    
-    
-    
-    useEffect(() => {
-        
-    }, []);
-    
-    
-    
-    
-    
-    
-    
+    const { isElectron } = useElectronWindow();
     useEffect(() => {
         const applyCustomBackground = () => {
             const bgImage = localStorage.getItem('unisound_custom_bg_image');
             const bgBlur = localStorage.getItem('unisound_custom_bg_blur');
             const rootStyle = document.documentElement.style;
 
-            
-            
             if (bgImage) {
                 rootStyle.setProperty('--custom-background-image', `url(${bgImage})`);
             } else {
                 rootStyle.setProperty('--custom-background-image', `url('./background.png')`);
             }
 
-            
             if (bgBlur) {
                 rootStyle.setProperty('--custom-background-blur', `${bgBlur}px`);
             } else {
@@ -259,28 +238,20 @@ const AppWrapper = memo(() => {
         };
 
         applyCustomBackground();
-
         
-        const handleSettingsChange = () => {
-            applyCustomBackground();
-        };
-        
-        
-        
-        window.addEventListener('background-settings-changed', handleSettingsChange);
-        window.addEventListener('storage', handleSettingsChange);
+        window.addEventListener('background-settings-changed', applyCustomBackground);
+        window.addEventListener('storage', applyCustomBackground);
 
         return () => {
-            window.removeEventListener('background-settings-changed', handleSettingsChange);
-            window.removeEventListener('storage', handleSettingsChange);
+            window.removeEventListener('background-settings-changed', applyCustomBackground);
+            window.removeEventListener('storage', applyCustomBackground);
         };
     }, []);
     
-    
-    
-
     return (
         <AppProviders>
+            <GlobalDragZone isElectron={isElectron} />
+            {isElectron && <WindowControls />}
             <div className="custom-background-layer" />
             <AppPreparationGate>
                 <App />
@@ -292,8 +263,6 @@ const AppWrapper = memo(() => {
 AppWrapper.displayName = "AppWrapper";
 
 export default AppWrapper;
-
-
 
 const useRouteChange = () => {
     const location = useLocation();
