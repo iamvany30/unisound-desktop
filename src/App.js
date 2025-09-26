@@ -6,6 +6,7 @@ import { AuthProvider } from './context/AuthContext';
 import { PlayerProvider } from './context/PlayerContext';
 import { ModalProvider } from './context/ModalContext';
 import { StatusProvider, useStatus } from './context/StatusContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { useAuth } from './hooks/useAuth';
 import { useElectronWindow } from './hooks/useElectronWindow';
 import api from './services/api';
@@ -16,7 +17,6 @@ import WindowControls from './components/Common/WindowControls';
 import KaraokePanel from './components/Player/KaraokePanel';
 import AppLoader from './components/Common/AppLoader';
 import UpdateNotification from './components/Common/UpdateNotification';
-import GlobalDragZone from './components/Common/GlobalDragZone';
 
 import './index.css';
 
@@ -38,7 +38,9 @@ const HomePage = loadPage(pageImportFactories[0]);
 const LoginPage = loadPage(pageImportFactories[1]);
 const RegisterPage = loadPage(pageImportFactories[2]);
 const ProfilePage = loadPage(pageImportFactories[3]);
-const SettingsPage = loadPage(pageImportFactories[4]);
+const SettingsPage = React.lazy(() => 
+    import('./pages/SettingsPage').then(module => ({ default: module.SettingsPage }))
+);
 const TrackDetailPage = loadPage(pageImportFactories[5]);
 const ArtistPage = loadPage(pageImportFactories[6]);
 const AdminPage = loadPage(pageImportFactories[7]);
@@ -129,7 +131,7 @@ const ProtectedRoutesLayout = memo(() => {
             <div className="fullscreen-message error">
                 <Shield size={48} />
                 <h2>Аккаунт заблокирован</h2>
-                <p>Ваш аккаунт был заблокирован. Обратитесь к администратору.</p>
+                <p>Вам был ограничен доступ в целях безопасности (ну или вы чёт нарушили)</p>
             </div>
         );
     }
@@ -197,13 +199,15 @@ AppRoutes.displayName = "AppRoutes";
 
 
 const AppProviders = memo(({ children }) => (
-    <StatusProvider>
-        <AuthProvider>
-            <PlayerProvider>
-                <ModalProvider>{children}</ModalProvider>
-            </PlayerProvider>
-        </AuthProvider>
-    </StatusProvider>
+    <ThemeProvider> 
+        <StatusProvider>
+            <AuthProvider>
+                <PlayerProvider>
+                    <ModalProvider>{children}</ModalProvider>
+                </PlayerProvider>
+            </AuthProvider>
+        </StatusProvider>
+    </ThemeProvider>
 ));
 AppProviders.displayName = "AppProviders";
 
@@ -218,6 +222,7 @@ App.displayName = "App";
 
 const AppWrapper = memo(() => {
     const { isElectron } = useElectronWindow();
+    
     useEffect(() => {
         const applyCustomBackground = () => {
             const bgImage = localStorage.getItem('unisound_custom_bg_image');
@@ -227,14 +232,13 @@ const AppWrapper = memo(() => {
             if (bgImage) {
                 rootStyle.setProperty('--custom-background-image', `url(${bgImage})`);
             } else {
-                rootStyle.setProperty('--custom-background-image', `url('./background.png')`);
+                rootStyle.removeProperty('--custom-background-image');
             }
 
-            if (bgBlur) {
-                rootStyle.setProperty('--custom-background-blur', `${bgBlur}px`);
-            } else {
-                rootStyle.setProperty('--custom-background-blur', '20px');
-            }
+            rootStyle.setProperty(
+                '--custom-background-blur', 
+                bgBlur ? `${bgBlur}px` : '20px'
+            );
         };
 
         applyCustomBackground();
@@ -250,7 +254,6 @@ const AppWrapper = memo(() => {
     
     return (
         <AppProviders>
-            <GlobalDragZone isElectron={isElectron} />
             {isElectron && <WindowControls />}
             <div className="custom-background-layer" />
             <AppPreparationGate>

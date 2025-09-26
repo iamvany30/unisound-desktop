@@ -73,11 +73,7 @@ const WindowControls = React.memo(() => {
         e.stopPropagation();
         
         
-        if (window.confirm?.(t('header.confirmClose', 'Вы уверены, что хотите закрыть приложение?'))) {
             close?.();
-        } else {
-            close?.();
-        }
     }, [close, t]);
     
     
@@ -92,7 +88,6 @@ const WindowControls = React.memo(() => {
     if (!isElectron) {
         return null;
     }
-    
     
     const containerClasses = [
         'window-controls',

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { HardDrive } from 'lucide-react';
 import './AuthLayout.css';
+import DraggableTopBar from '../Common/DraggableTopBar'; 
 
 const BACKGROUND_IMAGES = [
     "1.jpg", "2.jpg", "3.jpg", "4.jpg", "5.jpg", "12.jpg", "13.jpg",
@@ -110,6 +111,8 @@ const AuthLayout = ({ children }) => {
     return (
         <div className="auth-layout" role="main">
             
+            <DraggableTopBar />
+
             <BackgroundSlider images={BACKGROUND_IMAGES} />
             <ParticleSystem />
 

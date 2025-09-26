@@ -1,0 +1,9 @@
+.draggable-top-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    -webkit-app-region: drag;
+    z-index: 9998; 
+  }

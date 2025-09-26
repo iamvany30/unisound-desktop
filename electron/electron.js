@@ -1,260 +1,174 @@
-
-const { app, BrowserWindow, Menu, ipcMain, Tray, globalShortcut, shell, nativeImage, Notification } = require("electron");
+const { app, BrowserWindow, protocol } = require("electron");
 const path = require("path");
-const fs = require('fs/promises');
-const musicMetadata = require('music-metadata');
-const { default: Store } = require("electron-store");
-const { autoUpdater } = require("electron-updater");
 const log = require('electron-log');
 
-app.commandLine.appendSwitch('enable-transparent-visuals');
-app.commandLine.appendSwitch('force-gpu-rasterization');
-app.commandLine.appendSwitch('ignore-gpu-blocklist');
+class UniSoundApp {
+  constructor() {
+    this.isDev = !app.isPackaged;
+    this.mainWindow = null;
+    this.tray = null;
+    this.isQuitting = false;
+    this.modules = new Map();
+    
+    this.setupLogging();
+    this.setupCommandLineArgs();
+    this.initializeApp();
+  }
 
-const isDev = !app.isPackaged;
-const store = new Store();
-let mainWindow;
-let tray;
-let karaokeWindow;
+  setupLogging() {
+    log.transports.file.resolvePath = () => path.join(app.getPath('userData'), 'logs/main.log');
+    log.transports.file.level = this.isDev ? 'debug' : 'info';
+    Object.assign(console, log.functions);
+  }
 
-const iconPath = path.join(__dirname, isDev ? '../public/favicon.ico' : '../build/favicon.ico');
+  setupCommandLineArgs() {
+    const switches = [
+      'enable-transparent-visuals',
+      'force-gpu-rasterization', 
+      'ignore-gpu-blocklist',
+      'enable-features=VaapiVideoDecoder,HardwareMediaKeyHandling,MediaSessionService'
+    ];
+    switches.forEach(sw => app.commandLine.appendSwitch(sw));
+  }
 
-log.transports.file.resolvePath = () => path.join(app.getPath('userData'), 'logs/main.log');
-log.transports.file.level = 'info';
-Object.assign(console, log.functions);
+  async loadModule(moduleName) {
+    try {
+      if (this.modules.has(moduleName)) return this.modules.get(moduleName);
+      log.info(`[LOADING] ${moduleName}...`);
+      const moduleExports = require(`./modules/${moduleName}`);
+      this.modules.set(moduleName, moduleExports);
+      log.info(`[OK] ${moduleName} loaded`);
+      return moduleExports;
+    } catch (error) {
+      log.error(`[ERROR] Failed to load ${moduleName}:`, error);
+      throw error;
+    }
+  }
 
-autoUpdater.logger = log;
-autoUpdater.autoDownload = true;
-autoUpdater.autoInstallOnAppQuit = false;
+  async initializeApp() {
+    try {
+      log.info("=== UniSound Application Starting ===");
+      
+      if (process.platform === 'win32') {
+        app.setAppUserModelId("com.unisound.app");
+      }
+      
+      if (!this.isDev) {
+        app.setLoginItemSettings({ openAtLogin: true, args: process.argv.includes('--hidden') ? ['--hidden'] : [] });
+      }
 
-if (!isDev) {
-  app.setLoginItemSettings({
-    openAtLogin: true,
-    args: ['--hidden']
-  });
-}
+      this.handleSingleInstance();
+      this.registerAppEvents();
+      log.info("App initialization completed");
+    } catch (error) {
+      log.error("Fatal error during app initialization:", error);
+      this.gracefulShutdown();
+    }
+  }
 
-
-function showUpdateNotification(title, body) {
-  if (Notification.isSupported()) {
-    const notification = new Notification({
-      title,
-      body,
-      icon: iconPath,
-      silent: false
-    });
-    notification.on('click', () => {
-      if (mainWindow) {
-        if (!mainWindow.isVisible()) mainWindow.show();
-        if (mainWindow.isMinimized()) mainWindow.restore();
-        mainWindow.focus();
+  handleSingleInstance() {
+    if (!app.requestSingleInstanceLock()) {
+      log.info("Another instance is running. Exiting...");
+      app.quit();
+      return;
+    }
+    app.on('second-instance', () => {
+      if (this.mainWindow) {
+        if (!this.mainWindow.isVisible()) this.mainWindow.show();
+        if (this.mainWindow.isMinimized()) this.mainWindow.restore();
+        this.mainWindow.focus();
       }
     });
-    notification.show();
   }
-}
 
-async function scanForMusic(directory) {
-    let musicFiles = [];
-    const supportedExtensions = ['.mp3', '.flac', '.wav', '.ogg', '.m4a', '.aac'];
+  registerAppEvents() {
+    protocol.registerSchemesAsPrivileged([
+        { scheme: 'unisound-local', privileges: { standard: true, supportFetch: true, secure: true } }
+    ]);
+
+    app.whenReady().then(() => this.onReady());
+    app.on('activate', () => {
+      if (BrowserWindow.getAllWindows().length === 0) this.createMainWindow();
+    });
+    app.on('window-all-closed', () => {
+      if (process.platform !== 'darwin') this.gracefulShutdown();
+    });
+    app.on('before-quit', () => { this.isQuitting = true; });
+    app.on('will-quit', () => this.cleanup());
+  }
+
+  async onReady() {
     try {
-        const items = await fs.readdir(directory, { withFileTypes: true });
-        for (const item of items) {
-            const fullPath = path.join(directory, item.name);
-            if (item.isDirectory()) {
-                if (!item.name.startsWith('.')) {
-                    musicFiles = musicFiles.concat(await scanForMusic(fullPath));
-                }
-            } else if (supportedExtensions.includes(path.extname(item.name).toLowerCase())) {
-                musicFiles.push(fullPath);
-            }
-        }
+      log.info("=== App Ready Event ===");
+
+      protocol.registerFileProtocol('unisound-local', (request, callback) => {
+          const url = request.url.replace('unisound-local://', '');
+          try {
+              return callback(decodeURI(url));
+          }
+          catch (error) {
+              console.error('Не удалось обработать unisound-local URL', error);
+          }
+      });
+      
+      const [ { createMainWindow }, { createTray }, { initUpdater }, { initIpcHandlers }, { registerShortcuts } ] = await Promise.all([
+        this.loadModule('main-window'),
+        this.loadModule('tray'),
+        this.loadModule('app-updater'),
+        this.loadModule('ipc-handlers'),
+        this.loadModule('shortcuts')
+      ]);
+      
+      const webPreferences = {
+        preload: path.join(__dirname, "preload.js"),
+        contextIsolation: true,
+        nodeIntegration: false,
+        sandbox: false,
+        backgroundThrottling: false,
+      };
+
+      this.mainWindow = createMainWindow(this.isDev, webPreferences);
+      log.info("[OK] Main window created with correct webPreferences");
+
+      this.tray = createTray(this.mainWindow, this.isDev);
+      log.info("[OK] Tray created");
+      
+      initUpdater(this.mainWindow, this.isDev);
+      log.info("[OK] Auto-updater initialized");
+      
+      initIpcHandlers(this.mainWindow);
+      log.info("[OK] IPC handlers initialized");
+      
+      registerShortcuts(this.mainWindow);
+      log.info("[OK] Global shortcuts registered");
+
+      log.info("=== Application Successfully Started ===");
     } catch (error) {
-        console.warn(`Ошибка при сканировании директории ${directory}:`, error.message);
+      log.error("Critical error during app ready:", error);
     }
-    return musicFiles;
-}
-
-
-function createWindow() {
-  console.log('Создание главного окна приложения...');
-  const savedWindowState = store.get('windowState', { width: 1280, height: 800 });
-
-  mainWindow = new BrowserWindow({
-    ...savedWindowState,
-    minWidth: 940,
-    minHeight: 600,
-    frame: false,
-    titleBarStyle: "hidden",
-    transparent: true,
-    backgroundColor: '#00000000',
-    show: !process.argv.includes('--hidden'),
-    hasShadow: false,
-    webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
-      contextIsolation: true,
-      nodeIntegration: false,
-      webSecurity: false,
-    },
-    icon: iconPath,
-  });
-
-  const startUrl = isDev ? "http://localhost:3000" : `file://${path.join(__dirname, "../build/index.html")}`;
-  mainWindow.loadURL(startUrl);
-
-  mainWindow.once('ready-to-show', () => {
-    if (!process.argv.includes('--hidden')) {
-        mainWindow.show();
-    }
-    console.log('Окно готово к показу.');
-  });
-
-  if (isDev) {
-    mainWindow.webContents.openDevTools({ mode: 'detach' });
   }
 
-  const saveBounds = () => store.set('windowState', mainWindow.getBounds());
-  mainWindow.on('resize', saveBounds);
-  mainWindow.on('move', saveBounds);
-
-  const sendWindowState = () => {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('window-state-changed', { isMaximized: mainWindow.isMaximized() });
-    }
-  };
-  mainWindow.on('maximize', sendWindowState);
-  mainWindow.on('unmaximize', sendWindowState);
-
-  mainWindow.on('close', (event) => {
-    if (!app.isQuitting) {
-      event.preventDefault();
-      mainWindow.hide();
-    }
-    return false;
-  });
-
-  mainWindow.on('closed', () => {
-    mainWindow = null;
-  });
-
-  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    shell.openExternal(url);
-    return { action: 'deny' };
-  });
-
-  autoUpdater.on('update-available', (info) => {
-    if (mainWindow) mainWindow.webContents.send('update-message', { msg: 'available', info });
-    showUpdateNotification('Доступно обновление!', `Версия ${info.version} будет загружена в фоновом режиме.`);
-  });
-  autoUpdater.on('update-downloaded', () => {
-    if (mainWindow) mainWindow.webContents.send('update-message', { msg: 'downloaded' });
-    showUpdateNotification('Обновление готово!', 'Новая версия загружена. Перезапустите приложение, чтобы ее установить.');
-  });
-}
-
-function createTray() {
-  tray = new Tray(iconPath);
-  const contextMenu = Menu.buildFromTemplate([
-    { label: 'Открыть UniSound', click: () => mainWindow?.show() },
-    { type: 'separator' },
-    { label: 'Воспроизвести/Пауза', click: () => mainWindow?.webContents.send('media-control-event', 'play-pause') },
-    { label: 'Следующий трек', click: () => mainWindow?.webContents.send('media-control-event', 'next') },
-    { label: 'Предыдущий трек', click: () => mainWindow?.webContents.send('media-control-event', 'prev') },
-    { type: 'separator' },
-    { label: 'Выход', click: () => { app.isQuitting = true; app.quit(); } }
-  ]);
-  tray.setToolTip('UniSound');
-  tray.setContextMenu(contextMenu);
-  tray.on('click', () => {
-    mainWindow?.isVisible() ? mainWindow.hide() : mainWindow.show();
-  });
-}
-
-const gotTheLock = app.requestSingleInstanceLock();
-if (!gotTheLock) {
-  app.quit();
-} else {
-  app.on('second-instance', () => {
-    if (mainWindow) {
-      if (!mainWindow.isVisible()) mainWindow.show();
-      if (mainWindow.isMinimized()) mainWindow.restore();
-      mainWindow.focus();
-    }
-  });
-}
-
-app.on('ready', () => {
-  setTimeout(createWindow, 100);
-  createTray();
-  if (!isDev) {
-    setTimeout(() => autoUpdater.checkForUpdates(), 60 * 1000);
-    setInterval(() => autoUpdater.checkForUpdates(), 15 * 60 * 1000);
+  async gracefulShutdown() {
+    log.info("Starting graceful shutdown...");
+    app.quit();
   }
-  globalShortcut.register('MediaPlayPause', () => mainWindow?.webContents.send('media-control-event', 'play-pause'));
-  globalShortcut.register('MediaNextTrack', () => mainWindow?.webContents.send('media-control-event', 'next'));
-  globalShortcut.register('MediaPreviousTrack', () => mainWindow?.webContents.send('media-control-event', 'prev'));
-});
 
-app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) createWindow();
-});
+  cleanup() {
+    log.info("Cleaning up...");
+    if (this.modules.has('shortcuts')) {
+      const { unregisterShortcuts } = this.modules.get('shortcuts');
+      unregisterShortcuts();
+    }
+    if (this.tray && !this.tray.isDestroyed()) {
+      this.tray.destroy();
+    }
+    log.info("Cleanup completed");
+  }
+}
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
-});
-
-app.on('before-quit', () => app.isQuitting = true);
-app.on('will-quit', () => globalShortcut.unregisterAll());
-
-
-ipcMain.handle('window:minimize', () => BrowserWindow.getFocusedWindow()?.minimize());
-ipcMain.handle('window:maximize', () => {
-  const win = BrowserWindow.getFocusedWindow();
-  win?.isMaximized() ? win.unmaximize() : win?.maximize();
-});
-ipcMain.handle('window:close', () => BrowserWindow.getFocusedWindow()?.close());
-ipcMain.handle('window:get-initial-state', (e) => ({
-  isMaximized: BrowserWindow.fromWebContents(e.sender)?.isMaximized() || false
-}));
-
-ipcMain.handle('app:get-version', () => app.getVersion());
-
-ipcMain.on('quit-and-install', () => {
-  console.log('Получена команда: перезапустить и установить.');
-  autoUpdater.quitAndInstall();
-});
-
-ipcMain.handle('scan-music-library', async () => {
-    const musicDir = app.getPath('music');
-    console.log(`[Offline Mode] Начинаем сканирование директории: ${musicDir}`);
-    
-    const filePaths = await scanForMusic(musicDir);
-    
-    const tracksWithMetadata = await Promise.all(
-        filePaths.map(async (filePath) => {
-            try {
-                const metadata = await musicMetadata.parseFile(filePath);
-                const cover = musicMetadata.selectCover(metadata.common.picture);
-                
-                return {
-                    uuid: `local-${Buffer.from(filePath).toString('hex')}`,
-                    filePath: filePath,
-                    title: metadata.common.title || path.basename(filePath, path.extname(filePath)),
-                    artist: metadata.common.artist || 'Неизвестный исполнитель',
-                    album: metadata.common.album || 'Неизвестный альбом',
-                    year: metadata.common.year,
-                    duration: metadata.format.duration,
-                    artwork: cover ? `data:${cover.format};base64,${cover.data.toString('base64')}` : null,
-                    isLocal: true,
-                };
-            } catch (error) {
-                console.warn(`Не удалось обработать файл ${filePath}:`, error.message);
-                return null;
-            }
-        })
-    );
-    
-    const validTracks = tracksWithMetadata.filter(track => track !== null);
-    console.log(`[Offline Mode] Сканирование завершено. Найдено ${validTracks.length} треков.`);
-    return validTracks;
-});
+try {
+  new UniSoundApp();
+} catch (error) {
+  log.error("Failed to create UniSound app instance:", error);
+  process.exit(1);
+} 

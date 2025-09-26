@@ -13,10 +13,12 @@ import { usePlaylistManager } from '../hooks/usePlaylistManager';
 import { useWaveManager } from '../hooks/useWaveManager';
 import { useMediaSessionManager } from '../hooks/useMediaSessionManager';
 import { useKeyboardControls } from '../hooks/useKeyboardControls';
+import { useSimpleDebounce } from '../hooks/useDebounce';
 import { processTrackData } from '../utils/trackDataProcessor';
 
 export const PlayerContext = createContext(null);
 
+const PLAYER_STATE_KEY = 'unisound_player_state';
 const PLAYER_STATES = {
     IDLE: 'idle',
     LOADING: 'loading',
@@ -26,37 +28,44 @@ const PLAYER_STATES = {
     ERROR: 'error'
 };
 
-const getInitialState = (key, defaultValue) => {
+const getInitialState = () => {
     try {
-        const item = localStorage.getItem(key);
-        return item ? JSON.parse(item) : defaultValue;
+        const item = localStorage.getItem(PLAYER_STATE_KEY);
+        if (!item) return {};
+        const parsed = JSON.parse(item);
+        return {
+            playlist: parsed.playlist || [],
+            currentTrackIndex: parsed.currentTrackIndex || -1,
+            progress: parsed.progress || 0,
+            volume: parsed.volume ?? 1,
+            isMuted: parsed.isMuted ?? false,
+            repeatMode: parsed.repeatMode || 'off'
+        };
     } catch (error) {
-        return defaultValue;
-    }
-};
-
-const saveToLocalStorage = (key, value) => {
-    try {
-        localStorage.setItem(key, JSON.stringify(value));
-    } catch (error) {
-        console.warn(`Error saving to localStorage key "${key}":`, error);
+        return {};
     }
 };
 
 export const PlayerProvider = ({ children }) => {
-    const playlistManager = usePlaylistManager();
+    const [initialState] = useState(getInitialState);
+
+    const playlistManager = usePlaylistManager({
+        playlist: initialState.playlist,
+        currentTrackIndex: initialState.currentTrackIndex,
+    });
     const waveManager = useWaveManager(playlistManager);
 
     const [playerState, setPlayerState] = useState(PLAYER_STATES.IDLE);
-    const [progress, setProgress] = useState(0);
+    const [progress, setProgress] = useState(initialState.progress || 0);
     const [duration, setDuration] = useState(0);
-    const [volume, setVolume] = useState(() => getInitialState('player_volume', 1));
-    const [isMuted, setIsMuted] = useState(false);
+    const [volume, setVolume] = useState(initialState.volume ?? 1);
+    const [isMuted, setIsMuted] = useState(initialState.isMuted ?? false);
     const [isCurrentTrackLiked, setIsCurrentTrackLiked] = useState(false);
     const [error, setError] = useState(null);
     const [isNowPlayingOpen, setIsNowPlayingOpen] = useState(false);
     const [isLyricsVisible, setIsLyricsVisible] = useState(false);
     const [shouldAutoplay, setShouldAutoplay] = useState(false);
+    const debouncedProgress = useSimpleDebounce(progress, 1000);
 
     const audioRef = useRef(new Audio());
     const hlsRef = useRef(null);
@@ -66,8 +75,35 @@ export const PlayerProvider = ({ children }) => {
     const progressUpdateIntervalRef = useRef(null);
     const isSeekingRef = useRef(false);
 
-    const { currentTrack: rawCurrentTrack } = playlistManager;
+    const { currentTrack: rawCurrentTrack, playlist, currentTrackIndex, repeatMode, setRepeatMode } = playlistManager;
     const currentTrack = useMemo(() => processTrackData(rawCurrentTrack), [rawCurrentTrack]);
+    
+    useEffect(() => {
+        if(initialState.repeatMode) {
+            setRepeatMode(initialState.repeatMode);
+        }
+    }, [initialState.repeatMode, setRepeatMode]);
+
+    useEffect(() => {
+        const sanitizedPlaylist = playlist.map(track => {
+            const { artwork, ...rest } = track; 
+            return rest;
+        });
+
+        const stateToSave = {
+            playlist: sanitizedPlaylist,
+            currentTrackIndex,
+            progress: debouncedProgress,
+            volume,
+            isMuted,
+            repeatMode
+        };
+        try {
+            localStorage.setItem(PLAYER_STATE_KEY, JSON.stringify(stateToSave));
+        } catch (e) {
+            console.warn("Failed to save player state:", e);
+        }
+    }, [playlist, currentTrackIndex, debouncedProgress, volume, isMuted, repeatMode]);
 
     const isPlaying = playerState === PLAYER_STATES.PLAYING;
     const isLoading = playerState === PLAYER_STATES.LOADING;
@@ -99,9 +135,8 @@ export const PlayerProvider = ({ children }) => {
         }
     }, []);
 
-    const loadTrack = useCallback((track) => {
+    const loadTrack = useCallback((track, startTime = 0) => {
         setError(null);
-        setProgress(0);
         setDuration(0);
         isSeekingRef.current = false;
         if (progressUpdateIntervalRef.current) clearInterval(progressUpdateIntervalRef.current);
@@ -110,21 +145,29 @@ export const PlayerProvider = ({ children }) => {
         const audio = audioRef.current;
         if (!track) {
             audio.src = "";
+            setProgress(0);
             setPlayerState(PLAYER_STATES.IDLE);
             return;
         }
 
         setPlayerState(PLAYER_STATES.LOADING);
-
+        
+        const onLoaded = () => {
+            if (startTime > 0 && startTime < audio.duration) {
+                audio.currentTime = startTime;
+            }
+            setProgress(audio.currentTime);
+        };
+        audio.addEventListener('loadedmetadata', onLoaded, { once: true });
+        
         if (track.isLocal && track.filePath) {
-            const encodedPath = encodeURI(track.filePath.replace(/\\/g, '/'));
-            audio.src = `file://${encodedPath}`;
+            const objectURL = `file://${track.filePath}`;
+            audio.src = objectURL;
         } else if (track.hls_url && Hls.isSupported()) {
             const token = localStorage.getItem('unisound_token');
             const hls = new Hls({ xhrSetup: (xhr) => { if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`); } });
             hlsRef.current = hls;
             hls.on(Hls.Events.ERROR, (event, data) => { if (data.fatal) {
-                console.error('HLS Fatal Error:', data);
                 setPlayerState(PLAYER_STATES.ERROR);
                 setError('Ошибка при загрузке потока.');
             }});
@@ -138,11 +181,14 @@ export const PlayerProvider = ({ children }) => {
             return;
         }
         audio.load();
+        
+        return () => audio.removeEventListener('loadedmetadata', onLoaded);
     }, [cleanupHls]);
 
     useEffect(() => {
-        loadTrack(currentTrack);
-    }, [currentTrack, loadTrack]);
+        const startTime = (playlistManager.currentTrackIndex === initialState.currentTrackIndex) ? initialState.progress : 0;
+        loadTrack(currentTrack, startTime);
+    }, [currentTrack]);
 
     const playNext = useCallback(() => {
         if (playlistManager.canGoNext()) {
@@ -156,12 +202,13 @@ export const PlayerProvider = ({ children }) => {
         const audio = audioRef.current;
         if (audio.currentTime > 3) {
             audio.currentTime = 0;
-            setShouldAutoplay(true);
+            setProgress(0);
         } else if (playlistManager.canGoPrev()) {
             setShouldAutoplay(true);
             playlistManager.goToPrev();
         } else {
             audio.currentTime = 0;
+            setProgress(0);
         }
     }, [playlistManager]);
 
@@ -174,10 +221,12 @@ export const PlayerProvider = ({ children }) => {
     const play = useCallback(async () => {
          if (!currentTrack) return;
          try {
+             if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+                await audioContextRef.current.resume();
+             }
              if (!audioContextRef.current) initAudioContext();
              await audioRef.current.play();
          } catch (error) {
-             console.error("Playback Error:", error);
              setPlayerState(PLAYER_STATES.ERROR);
              setError(`Ошибка воспроизведения: ${error.message}`);
          }
@@ -188,11 +237,7 @@ export const PlayerProvider = ({ children }) => {
     }, []);
 
     const togglePlay = useCallback(() => {
-        if (isPlaying) {
-            pause();
-        } else {
-            play();
-        }
+        isPlaying ? pause() : play();
     }, [isPlaying, pause, play]);
     
     const seek = useCallback((time) => {
@@ -208,7 +253,7 @@ export const PlayerProvider = ({ children }) => {
     useEffect(() => {
         const audio = audioRef.current;
         const handleEnded = () => {
-            if (playlistManager.repeatMode === 'one') {
+            if (repeatMode === 'one') {
                 audio.currentTime = 0;
                 play();
             } else {
@@ -232,11 +277,8 @@ export const PlayerProvider = ({ children }) => {
             }, 250);
         };
         const handlePause = () => {
-            setPlayerState(PLAYER_STATES.PAUSED);
-            if (progressUpdateIntervalRef.current) {
-                clearInterval(progressUpdateIntervalRef.current);
-                progressUpdateIntervalRef.current = null;
-            }
+            if (isPlaying) setPlayerState(PLAYER_STATES.PAUSED);
+            if (progressUpdateIntervalRef.current) clearInterval(progressUpdateIntervalRef.current);
         };
         const handleWaiting = () => setPlayerState(PLAYER_STATES.LOADING);
         const handleError = (e) => {
@@ -266,24 +308,22 @@ export const PlayerProvider = ({ children }) => {
             audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
             audio.removeEventListener('seeked', handleSeeked);
         };
-    }, [play, playNext, playlistManager.repeatMode, shouldAutoplay]);
+    }, [play, playNext, repeatMode, shouldAutoplay, isPlaying]);
 
     const handleSetVolume = useCallback((newVolume) => {
         setIsMuted(newVolume === 0);
         setVolume(newVolume);
     }, []);
 
-    const toggleMute = useCallback(() => {
-        setIsMuted(prev => !prev);
-    }, []);
+    const toggleMute = useCallback(() => setIsMuted(prev => !prev), []);
+    const toggleRepeat = useCallback(() => playlistManager.toggleRepeat(waveManager.isWaveMode), [playlistManager, waveManager.isWaveMode]);
 
     const toggleLike = useCallback(async () => {
         if (!currentTrack || currentTrack.isLocal) return;
         const wasLiked = isCurrentTrackLiked;
         setIsCurrentTrackLiked(!wasLiked);
         try {
-            if (wasLiked) await api.tracks.removeInteraction(currentTrack.uuid);
-            else await api.tracks.like(currentTrack.uuid);
+            wasLiked ? await api.tracks.removeInteraction(currentTrack.uuid) : await api.tracks.like(currentTrack.uuid);
         } catch (error) {
             setIsCurrentTrackLiked(wasLiked);
         }
@@ -297,7 +337,6 @@ export const PlayerProvider = ({ children }) => {
     }, []);
 
     useEffect(() => { audioRef.current.volume = isMuted ? 0 : volume; }, [volume, isMuted]);
-    useEffect(() => { if (!isMuted) saveToLocalStorage('player_volume', volume); }, [volume, isMuted]);
 
     useEffect(() => {
         const checkLikeStatus = async () => {
@@ -317,12 +356,7 @@ export const PlayerProvider = ({ children }) => {
 
     useEffect(() => {
         const token = localStorage.getItem('unisound_token');
-        window.electronAPI?.updateKaraokeData?.({
-            track: currentTrack,
-            progress,
-            isPlaying,
-            token
-        });
+        window.electronAPI?.updateKaraokeData?.({ track: currentTrack, progress, isPlaying, token });
     }, [currentTrack, progress, isPlaying]);
 
     useEffect(() => {
@@ -369,16 +403,13 @@ export const PlayerProvider = ({ children }) => {
     const playerApi = useMemo(() => ({
         currentTrack, isPlaying, isLoading, playerState, progress, duration,
         volume, isMuted, isCurrentTrackLiked, error, isNowPlayingOpen, isLyricsVisible,
-        repeatMode: playlistManager.repeatMode,
-        playlist: playlistManager.playlist,
-        currentTrackIndex: playlistManager.currentTrackIndex,
+        repeatMode, playlist, currentTrackIndex,
         isShuffle: false,
         togglePlay, playNext, playPrev, seek,
         setVolume: handleSetVolume, toggleMute, toggleLike,
-        toggleRepeat: (isWaveMode) => playlistManager.toggleRepeat(isWaveMode),
-        playTrack,
+        toggleRepeat, playTrack,
         toggleNowPlaying, toggleLyricsWindow,
-        toggleShuffle: () => { console.warn('Shuffle not implemented yet'); },
+        toggleShuffle: () => {},
         isWaveMode: waveManager.isWaveMode,
         startWave: waveManager.startWave,
         stopWave: waveManager.stopWave,
@@ -391,9 +422,8 @@ export const PlayerProvider = ({ children }) => {
     }), [
         currentTrack, isPlaying, isLoading, playerState, progress, duration,
         volume, isMuted, isCurrentTrackLiked, error, isNowPlayingOpen, isLyricsVisible,
-        playlistManager, waveManager,
-        togglePlay, playNext, playPrev, seek, handleSetVolume, toggleMute,
-        toggleLike, loadTrack, toggleNowPlaying, toggleLyricsWindow, playTrack
+        playlistManager, waveManager, togglePlay, playNext, playPrev, seek, handleSetVolume, toggleMute,
+        toggleLike, loadTrack, toggleNowPlaying, toggleLyricsWindow, playTrack, repeatMode, playlist, currentTrackIndex, toggleRepeat
     ]);
 
     useMediaSessionManager(
@@ -409,12 +439,4 @@ export const PlayerProvider = ({ children }) => {
             {children}
         </PlayerContext.Provider>
     );
-};
-
-export const usePlayer = () => {
-    const context = useContext(PlayerContext);
-    if (!context) {
-        throw new Error('usePlayer must be used within a PlayerProvider');
-    }
-    return context;
 };

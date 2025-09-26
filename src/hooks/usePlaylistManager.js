@@ -1,9 +1,9 @@
 import { useState, useCallback, useMemo } from 'react';
 import api from '../services/api';
 
-export const usePlaylistManager = () => {
-    const [playlist, setPlaylist] = useState([]);
-    const [currentTrackIndex, setCurrentTrackIndex] = useState(-1);
+export const usePlaylistManager = (initialState = {}) => {
+    const [playlist, setPlaylist] = useState(initialState.playlist || []);
+    const [currentTrackIndex, setCurrentTrackIndex] = useState(initialState.currentTrackIndex || -1);
     const [repeatMode, setRepeatMode] = useState('off');
 
     const currentTrack = useMemo(() => 
@@ -41,7 +41,6 @@ export const usePlaylistManager = () => {
 
     const playTrackFromPlaylist = useCallback(async (track, trackList = []) => {
         if (track.isLocal) {
-            console.log(`[PlaylistManager] Playing local track: "${track.title}"`);
             const newPlaylist = trackList.length > 0 ? trackList : [track];
             setPlaylist(newPlaylist);
             const trackIndex = newPlaylist.findIndex(t => t.uuid === track.uuid);
@@ -49,7 +48,6 @@ export const usePlaylistManager = () => {
             return true;
         }
 
-        console.log(`[PlaylistManager] Fetching fresh data for online track: "${track.title}"`);
         try {
             const freshTrackData = await api.tracks.getDetails(track.uuid);
             const newPlaylist = (trackList.length > 0 ? trackList : [track]).map(t => 
@@ -60,7 +58,6 @@ export const usePlaylistManager = () => {
             setCurrentTrackIndex(trackIndex !== -1 ? trackIndex : 0);
             return true;
         } catch (error) {
-            console.error("Failed to get fresh track data, playing with stale data.", error);
             const newPlaylist = trackList.length > 0 ? trackList : [track];
             setPlaylist(newPlaylist);
             const trackIndex = newPlaylist.findIndex(t => t.uuid === track.uuid);
@@ -84,6 +81,7 @@ export const usePlaylistManager = () => {
         currentTrack,
         currentTrackIndex,
         repeatMode,
+        setRepeatMode,
         canGoNext,
         canGoPrev,
         goToNext,

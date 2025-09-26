@@ -1,6 +1,6 @@
 {
   "name": "unisound-react",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "private": true,
   "description": "A cross-platform desktop music player built with React and Electron. Stream music from online sources or play your local files with a modern, dynamic interface.",
   "author": {
@@ -10,7 +10,7 @@
   },
   "license": "UNLICENSED",
   "homepage": "./",
-  "main": "build/electron.js",
+  "main": "build/electron/electron.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/iamvany30/unisound-desktop.git"
@@ -33,7 +33,7 @@
   "scripts": {
     "start": "react-scripts start",
     "dev": "concurrently \"npm:start\" \"wait-on http://localhost:3000 && electron electron/electron.js\"",
-    "clean": "rimraf dist build node_modules",
+    "clean": "rimraf dist build",
     "build:react": "react-scripts build",
     "copy:electron": "copyfiles -u 1 electron/**/* build",
     "dist": "npm run clean && npm run build:react && npm run copy:electron && electron-builder",
@@ -119,7 +119,12 @@
     },
     "fileAssociations": [
       {
-        "ext": ["mp3", "flac", "ogg", "wav"],
+        "ext": [
+          "mp3",
+          "flac",
+          "ogg",
+          "wav"
+        ],
         "name": "Music File",
         "role": "Viewer",
         "icon": "assets/file-icon.ico"

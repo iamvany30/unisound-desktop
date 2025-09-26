@@ -1,50 +1,53 @@
 
 import React from 'react';
-import { Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Repeat1, Heart } from 'lucide-react';
+import { usePlayer } from '../../hooks/usePlayer';
+import { Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Repeat1 } from 'lucide-react';
 
-const e = React.createElement;
-
-
-const PlayerControls = ({ player }) => {
-    
+const PlayerControls = () => { 
     
     const { 
-        isPlaying, isShuffle, repeatMode, isCurrentTrackLiked,
-        togglePlay, playNext, playPrev, toggleShuffle, toggleRepeat, toggleLike 
-    } = player;
+        isPlaying,
+        isShuffle,
+        repeatMode,
+        togglePlay,
+        playNext,
+        playPrev,
+        toggleShuffle,
+        toggleRepeat
+    } = usePlayer();
     
-    
-    const RepeatIcon = () => {
-        if (repeatMode === 'one') return e(Repeat1, { size: 20 });
-        return e(Repeat, { size: 20 });
-    };
+    const RepeatIcon = repeatMode === 'one' ? Repeat1 : Repeat;
 
-    return e('div', { className: 'player-buttons' },
-        e('button', {
-            className: `control-btn like-btn ${isCurrentTrackLiked ? 'active' : ''}`,
-            onClick: toggleLike,
-            'aria-label': 'Like or unlike track'
-        }, e(Heart, { size: 20, fill: isCurrentTrackLiked ? 'currentColor' : 'none' })),
+    return (
+        <div className="player-buttons">
+            <button 
+                className={`control-btn secondary ${isShuffle ? 'active' : ''}`} 
+                onClick={toggleShuffle}
+                aria-label="Перемешать"
+            >
+                <Shuffle size={20} />
+            </button>
 
-        e('button', { 
-            className: `control-btn secondary ${isShuffle ? 'active' : ''}`, 
-            onClick: toggleShuffle,
-            'aria-label': 'Shuffle' 
-        }, e(Shuffle, { size: 20 })),
+            <button className="control-btn secondary" onClick={playPrev} aria-label="Предыдущий трек">
+                <SkipBack size={20} />
+            </button>
+            
+            <button className="control-btn play-pause-btn--main" onClick={togglePlay} aria-label={isPlaying ? 'Пауза' : 'Воспроизвести'}>
+                {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" />}
+            </button>
+            
+            <button className="control-btn secondary" onClick={playNext} aria-label="Следующий трек">
+                <SkipForward size={20} />
+            </button>
 
-        e('button', { className: 'control-btn secondary', onClick: playPrev, 'aria-label': 'Previous Track' }, e(SkipBack, { size: 20 })),
-        
-        e('button', { className: 'control-btn play-pause-btn--main', onClick: togglePlay, 'aria-label': isPlaying ? 'Pause' : 'Play' },
-            isPlaying ? e(Pause, { size: 24, fill: 'currentColor' }) : e(Play, { size: 24, fill: 'currentColor' })
-        ),
-        
-        e('button', { className: 'control-btn secondary', onClick: playNext, 'aria-label': 'Next Track' }, e(SkipForward, { size: 20 })),
-
-        e('button', { 
-            className: `control-btn secondary ${repeatMode !== 'off' ? 'active' : ''}`, 
-            onClick: toggleRepeat, 
-            'aria-label': 'Repeat' 
-        }, e(RepeatIcon))
+            <button 
+                className={`control-btn secondary ${repeatMode !== 'off' ? 'active' : ''}`} 
+                onClick={toggleRepeat} 
+                aria-label="Повтор"
+            >
+                <RepeatIcon size={20} />
+            </button>
+        </div>
     );
 };
 
