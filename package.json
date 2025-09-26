@@ -10,7 +10,7 @@
   },
   "license": "UNLICENSED",
   "homepage": "./",
-  "main": "build/electron/electron.js",
+  "main": "build/electron.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/iamvany30/unisound-desktop.git"
