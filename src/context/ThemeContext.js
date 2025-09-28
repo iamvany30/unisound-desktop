@@ -95,8 +95,12 @@ export const ThemeProvider = ({ children }) => {
     useEffect(() => {
         const root = document.documentElement;
         
-        root.classList.toggle('light-mode', activeTheme === 'light');
-        root.classList.toggle('dark-mode', activeTheme === 'dark');
+        root.classList.remove('theme-light', 'theme-dark');
+        if (activeTheme === 'light') {
+            root.classList.add('theme-light');
+        } else {
+            root.classList.add('theme-dark');
+        }
         root.classList.toggle('compact-mode', density === 'compact');
         root.classList.toggle('comfortable-mode', density !== 'compact');
         

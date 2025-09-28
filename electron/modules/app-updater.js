@@ -31,6 +31,10 @@ class AppUpdater extends EventEmitter {
     };
     
     this.checkTimer = null;
+    this.retryTimer = null;
+    this.retryCount = 0;
+    this.lastProgressNotificationPercentage = -1;
+    
     this.setupAutoUpdater();
   }
 
@@ -63,6 +67,7 @@ class AppUpdater extends EventEmitter {
       this.state.updateAvailable = true;
       this.state.version = info.version;
       this.state.lastCheck = new Date();
+      this.resetRetry(); 
       
       log.info(`[Updater] Update available: ${info.version}`);
       this.emit('update-available', info);
@@ -79,6 +84,7 @@ class AppUpdater extends EventEmitter {
       this.state.isChecking = false;
       this.state.updateAvailable = false;
       this.state.lastCheck = new Date();
+      this.resetRetry();
       
       log.info('[Updater] Update not available');
       this.emit('update-not-available', info);
@@ -97,18 +103,20 @@ class AppUpdater extends EventEmitter {
       });
 
       const percent = Math.floor(progressObj.percent);
-      if (percent > 0 && percent % 25 === 0) {
+      if (percent > 0 && percent >= this.lastProgressNotificationPercentage + 25) {
         this.showUpdateNotification(
           'Загрузка обновления',
           `Загружено ${percent}%`,
           'info'
         );
+        this.lastProgressNotificationPercentage = percent;
       }
     });
 
     autoUpdater.on('update-downloaded', (info) => {
       this.state.isDownloading = false;
       this.state.downloadProgress = 100;
+      this.lastProgressNotificationPercentage = -1;
       
       log.info(`[Updater] Update downloaded: ${info.version}`);
       this.emit('update-downloaded', info);
@@ -125,6 +133,7 @@ class AppUpdater extends EventEmitter {
       this.state.isChecking = false;
       this.state.isDownloading = false;
       this.state.error = error.message;
+      this.lastProgressNotificationPercentage = -1;
       
       log.error('[Updater] Update error:', error);
       this.emit('error', error);
@@ -133,10 +142,15 @@ class AppUpdater extends EventEmitter {
         error: error.message 
       });
       
-      if (!error.message.includes('net::') && !error.message.includes('ENOTFOUND')) {
+      const isNetworkError = error.message.includes('net::') || error.message.includes('ENOTFOUND');
+      
+      if (isNetworkError) {
+        log.warn('[Updater] Network error detected. Scheduling a retry...');
+        this.scheduleRetry();
+      } else {
         this.showUpdateNotification(
           'Ошибка обновления',
-          'Не удалось проверить обновления. Попробуем позже.',
+          'Не удалось проверить или загрузить обновление. Попробуем позже.',
           'error'
         );
       }
@@ -234,22 +248,51 @@ class AppUpdater extends EventEmitter {
       this.checkTimer = null;
     }
   }
+
+  scheduleRetry() {
+    this.stopPeriodicCheck();
+    if (this.retryTimer) clearTimeout(this.retryTimer);
+
+    this.retryCount++;
+    const delayMinutes = Math.min(30, Math.pow(2, this.retryCount));
+    const delay = delayMinutes * 60 * 1000;
+
+    log.info(`[Updater] Retrying update check in ${delayMinutes} minutes (attempt ${this.retryCount}).`);
+
+    this.retryTimer = setTimeout(() => {
+      log.info('[Updater] Executing scheduled retry check for updates...');
+      this.checkForUpdates();
+      this.startPeriodicCheck();
+    }, delay);
+  }
+
+  resetRetry() {
+    if (this.retryTimer) {
+      clearTimeout(this.retryTimer);
+      this.retryTimer = null;
+    }
+    if (this.retryCount > 0) {
+      log.info('[Updater] Update check successful, resetting retry counter.');
+      this.retryCount = 0;
+    }
+  }
+
   async checkForUpdates(showNoUpdateNotification = false) {
     if (this.isDev) {
       log.info('[Updater] Skipping update check in development mode');
-      return false;
+      return null;
     }
 
     if (this.state.isChecking || this.state.isDownloading) {
-      log.info('[Updater] Update check already in progress');
-      return false;
+      log.info('[Updater] Update check or download already in progress');
+      return null;
     }
 
     try {
-      log.info('[Updater] Starting manual update check');
+      log.info('[Updater] Starting update check...');
       const result = await autoUpdater.checkForUpdates();
       
-      if (!result.updateInfo.version && showNoUpdateNotification) {
+      if (result && !result.updateInfo.version && showNoUpdateNotification) {
         this.showUpdateNotification(
           'Обновлений нет',
           'Вы используете последнюю версию приложения.',
@@ -259,7 +302,7 @@ class AppUpdater extends EventEmitter {
       
       return result;
     } catch (error) {
-      log.error('[Updater] Manual check failed:', error);
+      log.error('[Updater] Check failed during execution:', error);
       
       if (showNoUpdateNotification) {
         this.showUpdateNotification(
@@ -350,6 +393,7 @@ class AppUpdater extends EventEmitter {
 
   cleanup() {
     this.stopPeriodicCheck();
+    if (this.retryTimer) clearTimeout(this.retryTimer);
     this.removeAllListeners();
     this.mainWindow = null;
     log.info('[Updater] Cleanup completed');
@@ -394,6 +438,13 @@ function getUpdateState() {
   return null;
 }
 
+function startDownload() {
+  if (appUpdater) {
+    return appUpdater.downloadUpdate();
+  }
+  return Promise.resolve(false);
+}
+
 function cleanupUpdater() {
   if (appUpdater) {
     appUpdater.cleanup();
@@ -408,5 +459,6 @@ module.exports = {
   checkForUpdates,
   quitAndInstall,
   getUpdateState,
+  startDownload,
   cleanupUpdater
 };

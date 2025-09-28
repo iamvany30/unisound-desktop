@@ -1,0 +1,55 @@
+{
+  "title": "Admin Panel",
+  "manageUsers": "User Management",
+  "manageTracks": "Track Management",
+  "system": "System",
+
+  "users": {
+    "id": "ID",
+    "username": "Username",
+    "email": "Email",
+    "status": "Status",
+    "role": "Role",
+    "active": "Active",
+    "admin": "Admin",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  
+  "tracks": {
+    "searchPlaceholder": "Search tracks by title or artist...",
+    "track": "Track",
+    "artist": "Artist",
+    "videoStatus": "Video Status",
+    "actions": "Actions",
+    "manage": "Manage"
+  },
+  
+  "system": {
+    "rescanTitle": "Rescan Library",
+    "rescanDescription": "Scans for new or deleted tracks in the music folder.",
+    "rescanButton": "Start Scan"
+  },
+
+  "videoModal": {
+    "title": "Manage Video",
+    "titleFor": "Manage video for \"{{title}}\"",
+    "currentStatus": "Current Status",
+    "noVideo": "No video uploaded.",
+    "shortVideo": "Short Video",
+    "fullVideo": "Full Video",
+    "upload": "Upload",
+    "selectFile": "Please select a file to upload.",
+    "uploadError": "An error occurred during upload.",
+    "deleteConfirm": "Are you sure you want to delete"
+  },
+
+  "syncModal": {
+    "title": "Video Sync",
+    "description": "Specify the offset in seconds. A positive value (e.g., 1.5) will make the video start later. A negative value (e.g., -0.5) will make it start earlier.",
+    "save": "Save",
+    "currentOffset": "Current Offset",
+    "button": "Sync",
+    "modalTitle": "Adjust Offset"
+  }
+}

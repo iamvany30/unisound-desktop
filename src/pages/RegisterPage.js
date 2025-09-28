@@ -20,20 +20,15 @@ const RegisterPage = () => {
         return <Navigate to="/" replace />;
     }
 
-    const handleRegister = async ({ username, password, email }) => {
+    const handleRegister = async (formData) => {
         setError(null);
         setSuccessMessage(null);
         setIsSubmitting(true);
         
         try {
-            await api.auth.register(username, password, email);
-            
+            await api.auth.register(formData.username, formData.password, formData.email);
             setSuccessMessage(t('registerSuccess'));
-            
-            setTimeout(() => {
-                navigate('/login');
-            }, 2000);
-
+            setTimeout(() => navigate('/login'), 2500);
         } catch (err) {
             setError(err.message || t('registerFailed'));
         } finally {
@@ -48,7 +43,7 @@ const RegisterPage = () => {
                 onSubmit={handleRegister}
                 error={error}
                 successMessage={successMessage}
-                disabled={isSubmitting}
+                isSubmitting={isSubmitting}
             />
         </AuthLayout>
     );

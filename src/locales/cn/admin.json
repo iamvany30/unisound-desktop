@@ -1,0 +1,55 @@
+{
+    "title": "管理面板",
+    "manageUsers": "用户管理",
+    "manageTracks": "曲目管理",
+    "system": "系统",
+  
+    "users": {
+      "id": "ID",
+      "username": "用户名",
+      "email": "电子邮件",
+      "status": "状态",
+      "role": "角色",
+      "active": "活跃",
+      "admin": "管理员",
+      "edit": "编辑",
+      "delete": "删除"
+    },
+    
+    "tracks": {
+      "searchPlaceholder": "按标题或艺术家搜索曲目...",
+      "track": "曲目",
+      "artist": "艺术家",
+      "videoStatus": "视频状态",
+      "actions": "操作",
+      "manage": "管理"
+    },
+    
+    "system": {
+      "rescanTitle": "重新扫描音乐库",
+      "rescanDescription": "扫描音乐文件夹中新增或删除的曲目。",
+      "rescanButton": "开始扫描"
+    },
+  
+    "videoModal": {
+      "title": "管理视频",
+      "titleFor": "管理 “{{title}}” 的视频",
+      "currentStatus": "当前状态",
+      "noVideo": "未上传视频。",
+      "shortVideo": "短视频",
+      "fullVideo": "完整视频",
+      "upload": "上传",
+      "selectFile": "请选择要上传的文件。",
+      "uploadError": "上传时发生错误。",
+      "deleteConfirm": "您确定要删除吗"
+    },
+  
+    "syncModal": {
+      "title": "视频同步",
+      "description": "指定以秒为单位的偏移量。正值（例如 1.5）将使视频稍后开始。负值（例如 -0.5）将使视频提前开始。",
+      "save": "保存",
+      "currentOffset": "当前偏移量",
+      "button": "同步",
+      "modalTitle": "调整偏移量"
+    }
+  }

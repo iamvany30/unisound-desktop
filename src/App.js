@@ -1,5 +1,8 @@
-import React, { Suspense, memo, useEffect, useState, useCallback } from 'react';
+
+
+import React, { memo, useEffect, useState } from 'react';
 import { HashRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { LoaderCircle, Shield, AlertCircle } from 'lucide-react';
 
 import { AuthProvider } from './context/AuthContext';
@@ -7,46 +10,41 @@ import { PlayerProvider } from './context/PlayerContext';
 import { ModalProvider } from './context/ModalContext';
 import { StatusProvider, useStatus } from './context/StatusContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { EqualizerProvider } from './context/EqualizerContext'; 
 import { useAuth } from './hooks/useAuth';
 import { useElectronWindow } from './hooks/useElectronWindow';
 import api from './services/api';
 
+import Sidebar from './components/Common/Sidebar';
 import Header from './components/Common/Header';
-import Footer from './components/Common/Footer';
+import PlayerBar from './components/Common/PlayerBar';
 import WindowControls from './components/Common/WindowControls';
+import DraggableTopBar from './components/Common/DraggableTopBar';
 import KaraokePanel from './components/Player/KaraokePanel';
 import AppLoader from './components/Common/AppLoader';
 import UpdateNotification from './components/Common/UpdateNotification';
 
+import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import ProfilePage from './pages/ProfilePage';
+import { SettingsPage } from './pages/SettingsPage';
+import TrackDetailPage from './pages/TrackDetailPage';
+import ArtistPage from './pages/ArtistPage';
+import AdminPage from './pages/AdminPage/AdminPage';
+import LocalLibraryPage from './pages/LocalLibraryPage';
+import LikedSongsPage from './pages/LikedSongsPage';
+import ErrorBoundary from './components/Common/ErrorBoundary';
+
 import './index.css';
 
-const loadPage = (importFunc) => React.lazy(importFunc);
-
-const pageImportFactories = [
-  () => import('./pages/HomePage'),
-  () => import('./pages/LoginPage'),
-  () => import('./pages/RegisterPage'),
-  () => import('./pages/ProfilePage'),
-  () => import('./pages/SettingsPage'),
-  () => import('./pages/TrackDetailPage'),
-  () => import('./pages/ArtistPage'),
-  () => import('./pages/AdminPage/AdminPage'),
-  () => import('./pages/LocalLibraryPage'),
-];
-
-const HomePage = loadPage(pageImportFactories[0]);
-const LoginPage = loadPage(pageImportFactories[1]);
-const RegisterPage = loadPage(pageImportFactories[2]);
-const ProfilePage = loadPage(pageImportFactories[3]);
-const SettingsPage = React.lazy(() => 
-    import('./pages/SettingsPage').then(module => ({ default: module.SettingsPage }))
-);
-const TrackDetailPage = loadPage(pageImportFactories[5]);
-const ArtistPage = loadPage(pageImportFactories[6]);
-const AdminPage = loadPage(pageImportFactories[7]);
-const LocalLibraryPage = loadPage(pageImportFactories[8]); 
-const SilentLoader = memo(() => null);
-SilentLoader.displayName = "SilentLoader";
+const PageLoader = memo(({ message = "Загрузка..." }) => (
+    <div className="page-loader">
+        <LoaderCircle size={48} className="animate-spin" />
+        {message && <p>{message}</p>}
+    </div>
+));
+PageLoader.displayName = "PageLoader";
 
 const AppPreparationGate = memo(({ children }) => {
     const [isReady, setIsReady] = useState(false);
@@ -58,19 +56,17 @@ const AppPreparationGate = memo(({ children }) => {
         const prepareApp = async () => {
             console.log('%c[AppLoader] Подготовка приложения...', 'color: green; font-weight: bold;');
             
-            setProgress(10);
-            setStatusText('Загрузка компонентов...');
+            setProgress(20);
+            setStatusText('Загрузка интерфейса...');
             
-            await Promise.all(pageImportFactories.map(factory => factory()));
-            console.log('[AppLoader] Все бандлы страниц загружены.');
-            
-            setProgress(40);
+            setProgress(50);
             if (token) {
                 setStatusText('Синхронизация данных...');
                 try {
                     await Promise.all([api.user.getProfile(), api.highlights.getHome()]);
                     console.log('[AppLoader] Критические данные загружены.');
-                } catch (error) {
+                } catch (error)
+ {
                     console.warn('[AppLoader] Не удалось предзагрузить данные:', error);
                 }
             }
@@ -94,22 +90,73 @@ const AppPreparationGate = memo(({ children }) => {
 });
 AppPreparationGate.displayName = "AppPreparationGate";
 
+const pageVariants = {
+  initial: {
+    opacity: 0,
+    y: 20,
+  },
+  in: {
+    opacity: 1,
+    y: 0,
+  },
+  out: {
+    opacity: 0,
+    y: -20,
+  },
+};
+
+const pageTransition = {
+  type: 'tween',
+  ease: 'anticipate',
+  duration: 0.5,
+};
+
 const AppLayout = memo(() => {
+    const { token } = useAuth();
+    const location = useLocation();
+    
+    
+    const [isInitialRender, setIsInitialRender] = useState(true);
+
+    useEffect(() => {
+        
+        
+        const timer = setTimeout(() => setIsInitialRender(false), 10);
+        return () => clearTimeout(timer);
+    }, []);
+    
+
+    if (!token) return <Navigate to="/login" />;
+
     return (
-        <div className="app-wrapper">
-            <div className="app-background-mica" />
-            <div className="app-container">
-                <Header />
-                <main className="main-content">
-                    <Outlet />
-                </main>
-                <Footer />
-            </div>
+        <div className="app-grid-layout">
+            <Sidebar />
+            <Header />
+            <main className="main-content">
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={location.pathname}
+                        
+                        
+                        
+                        initial={isInitialRender ? "in" : "initial"}
+                        animate="in"
+                        exit="out"
+                        variants={pageVariants}
+                        transition={pageTransition}
+                        className="content-wrapper glass-system-component"
+                    >
+                        <ErrorBoundary>
+                            <Outlet />
+                        </ErrorBoundary>
+                    </motion.div>
+                </AnimatePresence>
+            </main>
+            <PlayerBar />
         </div>
     );
 });
 AppLayout.displayName = "AppLayout";
-
 
 const MainContentSelector = () => {
     const { isOfflineMode } = useAuth();
@@ -165,7 +212,6 @@ const PublicRoutesLayout = memo(() => {
 });
 PublicRoutesLayout.displayName = "PublicRoutesLayout";
 
-
 const AppRoutes = memo(() => {
     const { checkStatus } = useStatus();
     useEffect(() => { checkStatus().catch(console.warn); }, [checkStatus]);
@@ -184,8 +230,10 @@ const AppRoutes = memo(() => {
                     <Route index element={<MainContentSelector />} /> 
                     <Route path="profile" element={<ProfilePage />} />
                     <Route path="settings" element={<SettingsPage />} />
+                    <Route path="likes" element={<LikedSongsPage />} />
                     <Route path="tracks/:trackUuid" element={<TrackDetailPage />} />
                     <Route path="artists/:artistName" element={<ArtistPage />} />
+                    <Route path="library" element={<LocalLibraryPage />} />
                     <Route element={<AdminRoutesLayout />}>
                         <Route path="admin/*" element={<AdminPage />} />
                     </Route>
@@ -197,14 +245,15 @@ const AppRoutes = memo(() => {
 });
 AppRoutes.displayName = "AppRoutes";
 
-
 const AppProviders = memo(({ children }) => (
     <ThemeProvider> 
         <StatusProvider>
             <AuthProvider>
-                <PlayerProvider>
-                    <ModalProvider>{children}</ModalProvider>
-                </PlayerProvider>
+                <EqualizerProvider>
+                    <PlayerProvider>
+                        <ModalProvider>{children}</ModalProvider>
+                    </PlayerProvider>
+                </EqualizerProvider>
             </AuthProvider>
         </StatusProvider>
     </ThemeProvider>
@@ -212,40 +261,55 @@ const AppProviders = memo(({ children }) => (
 AppProviders.displayName = "AppProviders";
 
 const App = memo(() => (
-    <HashRouter>
-        <Suspense fallback={<SilentLoader />}>
-            <AppRoutes />
-        </Suspense>
+    <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <AppRoutes />
     </HashRouter>
 ));
 App.displayName = "App";
 
 const AppWrapper = memo(() => {
-    const { isElectron } = useElectronWindow();
+    const { isElectron, isMaximized } = useElectronWindow();
+    
+    useEffect(() => {
+        const platform = window.navigator.platform.toLowerCase();
+        const rootElement = document.getElementById('root');
+        if (rootElement) {
+            if (platform.includes('win')) {
+                rootElement.classList.add('platform-win32');
+            } else if (platform.includes('mac')) {
+                rootElement.classList.add('platform-darwin');
+            } else {
+                rootElement.classList.add('platform-linux');
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        const rootElement = document.getElementById('root');
+        if (!rootElement || !isElectron) return;
+
+        if (isMaximized) {
+            rootElement.classList.add('maximized');
+        } else {
+            rootElement.classList.remove('maximized');
+        }
+    }, [isElectron, isMaximized]);
     
     useEffect(() => {
         const applyCustomBackground = () => {
             const bgImage = localStorage.getItem('unisound_custom_bg_image');
             const bgBlur = localStorage.getItem('unisound_custom_bg_blur');
             const rootStyle = document.documentElement.style;
-
             if (bgImage) {
                 rootStyle.setProperty('--custom-background-image', `url(${bgImage})`);
             } else {
                 rootStyle.removeProperty('--custom-background-image');
             }
-
-            rootStyle.setProperty(
-                '--custom-background-blur', 
-                bgBlur ? `${bgBlur}px` : '20px'
-            );
+            rootStyle.setProperty('--custom-background-blur', bgBlur ? `${bgBlur}px` : '20px');
         };
-
         applyCustomBackground();
-        
         window.addEventListener('background-settings-changed', applyCustomBackground);
         window.addEventListener('storage', applyCustomBackground);
-
         return () => {
             window.removeEventListener('background-settings-changed', applyCustomBackground);
             window.removeEventListener('storage', applyCustomBackground);
@@ -254,6 +318,7 @@ const AppWrapper = memo(() => {
     
     return (
         <AppProviders>
+            {isElectron && <DraggableTopBar />}
             {isElectron && <WindowControls />}
             <div className="custom-background-layer" />
             <AppPreparationGate>
@@ -263,6 +328,7 @@ const AppWrapper = memo(() => {
         </AppProviders>
     );
 });
+
 AppWrapper.displayName = "AppWrapper";
 
 export default AppWrapper;
@@ -271,14 +337,6 @@ const useRouteChange = () => {
     const location = useLocation();
     useEffect(() => { window.scrollTo(0, 0); }, [location.pathname]);
 };
-
-const PageLoader = memo(({ message = "Загрузка..." }) => (
-    <div className="page-loader">
-        <LoaderCircle size={48} className="animate-spin" />
-        {message && <p>{message}</p>}
-    </div>
-));
-PageLoader.displayName = "PageLoader";
 
 const ErrorPage = memo(({ error, onRetry }) => (
      <div className="fullscreen-message error">

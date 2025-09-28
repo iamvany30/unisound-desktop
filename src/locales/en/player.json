@@ -1,0 +1,15 @@
+{
+    "collapsePlayer": "Collapse Player",
+    "toggleLyrics": "Toggle Lyrics",
+    "shuffle": "Shuffle",
+    "previousTrack": "Previous Track",
+    "play": "Play",
+    "pause": "Pause",
+    "nextTrack": "Next Track",
+    "repeat": "Repeat",
+    "like": "Like",
+    "queue": "Queue",
+    "volume": "Volume",
+    "trackProgress": "Track Progress",
+    "coverArtFor": "Cover art for {{title}}"
+  }

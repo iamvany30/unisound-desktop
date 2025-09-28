@@ -111,6 +111,7 @@ const api = {
     user: {
         getProfile: () => fetchApi('/users/me'),
         getHistory: (limit = 50) => fetchApi(`/users/me/history?limit=${limit}`),
+        getLikedTracks: () => fetchApi('/users/me/likes'),
         prefetchProfileAndHistory: () => {
             console.log('[Prefetch] Data requested: Profile & History');
             api.user.getProfile().catch(() => {});
@@ -176,6 +177,15 @@ const api = {
         getNextTrack: () => fetchApi('/wave/next/track'),
         submitFeedback: (payload) => fetchApi('/wave/feedback', {
             method: 'POST', body: JSON.stringify(payload)
+        }),
+        
+        clearWaveSession: () => fetchApi('/wave/session/clear', { method: 'POST' }),
+        
+        getMyWaveSettings: () => fetchApi('/wave/settings'),
+        
+        updateMyWaveSettings: (settings) => fetchApi('/wave/settings', {
+            method: 'PUT',
+            body: JSON.stringify(settings)
         }),
     },
     

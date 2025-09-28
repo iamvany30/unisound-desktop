@@ -1,3 +1,5 @@
+
+
 import { useEffect } from 'react';
 import { useArtwork } from './useArtwork';
 
@@ -12,6 +14,9 @@ export const useMediaSessionManager = (currentTrack, isPlaying, playerActions, p
         if (!currentTrack) {
             navigator.mediaSession.metadata = null;
             navigator.mediaSession.playbackState = 'none';
+            try {
+                navigator.mediaSession.setPositionState(null);
+            } catch (e) { /* Игнорируем ошибки при сбросе */ }
             return;
         }
 
@@ -33,18 +38,30 @@ export const useMediaSessionManager = (currentTrack, isPlaying, playerActions, p
             navigator.mediaSession.setActionHandler('seekto', (details) => {
                 if (!details.fastSeek) seek(details.seekTime);
             });
-        } catch (e) {}
+        } catch (e) {
+            
+        }
 
     }, [currentTrack, isPlaying, artworkSrc, togglePlay, playNext, playPrev, seek]);
 
     useEffect(() => {
         if ('mediaSession' in navigator && navigator.mediaSession.setPositionState) {
+            
             if (currentTrack && duration > 0) {
-                navigator.mediaSession.setPositionState({
-                    duration: duration,
-                    playbackRate: 1,
-                    position: progress,
-                });
+                
+                
+                const safeProgress = Math.min(progress, duration);
+
+                try {
+                    navigator.mediaSession.setPositionState({
+                        duration: duration,
+                        playbackRate: 1,
+                        position: safeProgress,
+                    });
+                } catch (e) {
+                    
+                    console.warn("Could not set Position State:", e.message);
+                }
             }
         }
     }, [progress, duration, currentTrack]);

@@ -1,5 +1,3 @@
-// Файл: src/pages/LikedSongsPage.js
-
 import React, { useState, useEffect, useCallback, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
@@ -8,7 +6,6 @@ import { useArtwork } from '../hooks/useArtwork';
 import { LoaderCircle, Music, Play, Heart, Info, RefreshCw } from 'lucide-react';
 import './LikedSongsPage.css';
 
-// Вспомогательный компонент для элемента списка, адаптированный из ArtistPage
 const TrackListItem = memo(({ track, index, onPlay, isPlaying, isPaused, t }) => {
     const { artworkSrc } = useArtwork(track);
     const isActive = isPlaying || isPaused;
@@ -47,19 +44,17 @@ const LikedSongsPage = () => {
     const { t } = useTranslation(['common', 'artistPage']);
     const player = usePlayer();
     const [tracks, setTracks] = useState([]);
-    const [status, setStatus] = useState('loading'); // 'loading', 'success', 'error', 'empty'
+    const [status, setStatus] = useState('loading');
 
     const fetchLikedTracks = useCallback(async () => {
         setStatus('loading');
         try {
-            // --- ИСПРАВЛЕНИЕ ЗДЕСЬ: Новый API возвращает массив напрямую ---
             const likedTracks = await api.user.getLikedTracks();
             
             if (Array.isArray(likedTracks)) {
                 setTracks(likedTracks);
                 setStatus(likedTracks.length > 0 ? 'success' : 'empty');
             } else {
-                // На случай, если API вернет что-то неожиданное
                 console.error("API response for liked tracks is not an array:", likedTracks);
                 setTracks([]);
                 setStatus('empty');

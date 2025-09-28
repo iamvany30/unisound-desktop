@@ -18,11 +18,11 @@ const LoginPage = () => {
         return <Navigate to="/" replace />;
     }
 
-    const handleLogin = async ({ username, password }) => {
+    const handleLogin = async (formData) => {
         setError(null);
         setIsSubmitting(true);
         try {
-            await login(username, password);
+            await login(formData.username, formData.password);
             navigate('/');
         } catch (err) {
             setError(err.message || t('loginFailed'));
@@ -37,9 +37,9 @@ const LoginPage = () => {
                 formType="login"
                 onSubmit={handleLogin}
                 error={error}
-                disabled={isSubmitting}
+                isSubmitting={isSubmitting}
             >
-                <div className="auth-divider"><span>ИЛИ</span></div>
+                <div className="auth-divider"><span>{t('or')}</span></div>
                 <TelegramLoginButton botName={TELEGRAM_BOT_NAME} />
             </AuthForm>
         </AuthLayout>

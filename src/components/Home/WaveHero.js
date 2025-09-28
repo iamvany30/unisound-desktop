@@ -1,12 +1,27 @@
 
+
 import React, { useEffect, useRef } from 'react';
-import { Play, Pause } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Play, Pause, SlidersHorizontal } from 'lucide-react';
+import { useModal } from '../../context/ModalContext';
+import WaveSettingsModal from './WaveSettingsModal'; 
 import './WaveHero.css';
 
 const WaveHero = ({ onPlayWave, isPlaying = false, title }) => {
   const containerRef = useRef(null);
+  const { showModal } = useModal();
+  const { t } = useTranslation('home');
 
-  
+  const handleOpenSettings = (e) => {
+    e.stopPropagation(); 
+    showModal({
+        title: t('wave.modalTitle'),
+        body: <WaveSettingsModal />,
+        
+        footer: null, 
+    });
+  };
+
   useEffect(() => {
     const heroContainer = containerRef.current;
     if (!heroContainer) return;
@@ -39,16 +54,14 @@ const WaveHero = ({ onPlayWave, isPlaying = false, title }) => {
       </div>
 
       <div className="floating-particles">
-        {[...Array(15)].map((_, i) => (
-          <div key={i} className="particle"></div>
-        ))}
+        {[...Array(15)].map((_, i) => <div key={i} className="particle"></div>)}
       </div>
 
       <div className="wave-hero-content">
         <button
           onClick={onPlayWave}
           className={`wave-play-button ${isPlaying ? 'is-playing' : ''}`}
-          aria-label={title || "Play My Wave"}
+          aria-label={title}
         >
           <div className="play-icon-container">
             <div className="icon-glow"></div>
@@ -60,9 +73,17 @@ const WaveHero = ({ onPlayWave, isPlaying = false, title }) => {
               )}
             </div>
           </div>
-          <span className="play-text">{title || 'Моя волна'}</span>
+          <span className="play-text">{title}</span>
         </button>
       </div>
+      
+      <button 
+        className="wave-settings-button"
+        onClick={handleOpenSettings}
+        aria-label={t('wave.settingsAriaLabel')}
+      >
+        <SlidersHorizontal size={20} />
+      </button>
 
       <div className="ambient-light"></div>
     </div>

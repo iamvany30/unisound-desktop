@@ -1,0 +1,89 @@
+{
+  "title": "Settings",
+  "common": {
+    "title": "General"
+  },
+  "appearance": {
+    "title": "Appearance",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "density": "Interface Density",
+    "densityComfortable": "Comfortable",
+    "densityCompact": "Compact",
+    "glassAlpha": "Panel Opacity",
+    "glassBlur": "Blur Intensity",
+    "colorDescription": "Customize the main accent color of the application.",
+    "resetColorButton": "Reset Color",
+    "background": "Background Image",
+    "backgroundDescription": "Set a custom image for the application background.",
+    "uploadButton": "Upload .png or .jpg",
+    "blur": "Background Blur Level",
+    "blurDescription": "Adjust the intensity of the blur effect.",
+    "resetButton": "Reset to Default",
+    "resetConfirmTitle": "Reset Background",
+    "resetConfirmMessage": "Are you sure you want to reset the background to the default?",
+    "resetSuccessMessage": "Background settings have been reset.",
+    "fileErrorTitle": "File Error",
+    "fileErrorMessage": "Please select an image file (PNG, JPG)."
+  },
+  "sound": {
+    "title": "Sound",
+    "description": "Customize the sound to your preference.",
+    "preset": "Preset",
+    "default": "Default",
+    "manual": "Custom",
+    "builtIn": "Built-in",
+    "myPresets": "My Presets",
+    "savePresetTitle": "Save Preset",
+    "deletePresetTitle": "Delete Preset",
+    "deleteConfirm": "Are you sure you want to delete the \"{{presetName}}\" preset?"
+  },
+  "data": {
+    "title": "Data"
+  },
+  "video": {
+    "title": "Video Preload",
+    "description": "Automatically load the next video in the background for instant playback."
+  },
+  "quality": {
+    "title": "Audio Quality",
+    "description": "High quality requires more data and may take longer to load.",
+    "low": "Low",
+    "standard": "Standard",
+    "high": "High",
+    "changed": "Audio quality will be applied to the next track."
+  },
+  "notifications": {
+    "groupTitle": "Notifications",
+    "title": "Push Notifications",
+    "enable": "Enable",
+    "subscribing": "Subscribing...",
+    "enabled": "Enabled",
+    "blocked": "Blocked",
+    "success": "Notifications enabled successfully!",
+    "successTitle": "Great!",
+    "error": "Failed to enable notifications.",
+    "errorTitle": "Error",
+    "modal": {
+      "title": "Stay up to date",
+      "description": "We'd like to send you notifications for important events:",
+      "feature1": "Releases from your favorite artists",
+      "feature2": "New personal recommendations",
+      "feature3": "No ads or spam.",
+      "info": "You can change these settings at any time."
+    }
+  },
+  "fullReset": {
+    "title": "Full Reset",
+    "description": "This will delete all local application data and log you out.",
+    "button": "Perform Reset",
+    "confirm": "Are you sure? All local data will be erased.",
+    "success": "Reset complete. The application will now reload.",
+    "successTitle": "Reset Complete"
+  },
+  "language": {
+    "title": "Interface Language"
+  }
+}

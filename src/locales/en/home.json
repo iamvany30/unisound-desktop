@@ -1,0 +1,8 @@
+{
+  "waveHero": {
+    "myWave": "My Wave",
+    "play": "Play"
+  },
+  "recommendations": "Made For You",
+  "loadError": "Failed to load data for the home page."
+}

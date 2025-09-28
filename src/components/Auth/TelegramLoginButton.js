@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
@@ -10,40 +9,32 @@ const TelegramLoginButton = ({ botName }) => {
     const buttonContainerRef = useRef(null);
     const [error, setError] = useState(null);
 
-    
     const onTelegramAuth = useCallback(async (user) => {
         setError(null);
         try {
             await loginWithTelegram(user);
             navigate('/'); 
         } catch (err) {
-            console.error('Telegram auth error on backend:', err);
+            console.error('Telegram auth error:', err);
             setError(err.message || 'Ошибка входа через Telegram.');
         }
     }, [loginWithTelegram, navigate]);
 
     useEffect(() => {
-        
         window.onTelegramAuth = onTelegramAuth;
-
-        const container = buttonContainerRef.current;
-        if (!container) return;
-
-        
         const script = document.createElement('script');
         script.src = "https://telegram.org/js/telegram-widget.js?22";
+        script.async = true;
         script.setAttribute('data-telegram-login', botName);
         script.setAttribute('data-size', 'large');
         script.setAttribute('data-onauth', 'onTelegramAuth(user)');
         script.setAttribute('data-request-access', 'write');
-        script.async = true;
-
         
+        const container = buttonContainerRef.current;
         container.appendChild(script);
 
-        
         return () => {
-            if (container.contains(script)) {
+            if (container && container.contains(script)) {
                 container.removeChild(script);
             }
             delete window.onTelegramAuth;
@@ -51,15 +42,9 @@ const TelegramLoginButton = ({ botName }) => {
     }, [botName, onTelegramAuth]); 
 
     return (
-        <div>
+        <div className="telegram-login-wrapper">
             <div ref={buttonContainerRef} />
-            
-            {error && (
-                <div className="feedback-message error" style={{ marginTop: '16px' }}>
-                    <AlertCircle size={18} aria-hidden="true" />
-                    <span>{error}</span>
-                </div>
-            )}
+            {error && <div className="feedback-message error" style={{ marginTop: '16px' }}><AlertCircle size={18}/><span>{error}</span></div>}
         </div>
     );
 };

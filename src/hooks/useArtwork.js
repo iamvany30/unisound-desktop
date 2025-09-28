@@ -1,78 +1,83 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config';
 
 const artworkCache = new Map();
 
-
 export const useArtwork = (track) => {
     const [artworkSrc, setArtworkSrc] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [errorStatus, setErrorStatus] = useState(null);
+    const [error, setError] = useState(null);
     
-    const currentRequestRef = useRef(null);
     const trackUuid = track?.uuid;
 
     useEffect(() => {
-        setIsLoading(true);
-        setErrorStatus(null);
-        setArtworkSrc(null);
-
+        
         if (!trackUuid) {
             setIsLoading(false);
+            setArtworkSrc(null);
+            setError(null);
             return;
         }
 
+        
         if (track.isLocal) {
             setArtworkSrc(track.artwork);
             setIsLoading(false);
+            setError(null);
             return;
         }
-
+        
+        
         if (artworkCache.has(trackUuid)) {
             const cached = artworkCache.get(trackUuid);
             setArtworkSrc(cached.src);
-            setErrorStatus(cached.error);
+            setError(cached.error);
             setIsLoading(false);
             return;
         }
 
-        let isMounted = true;
-        const requestId = Symbol('request');
-        currentRequestRef.current = requestId;
+        
+        const abortController = new AbortController();
+        const { signal } = abortController;
 
         const fetchArtwork = async () => {
+            setIsLoading(true);
+            setError(null);
+            setArtworkSrc(null);
+
             const token = localStorage.getItem('unisound_token');
             if (!token) {
-                if (isMounted && currentRequestRef.current === requestId) {
-                    setErrorStatus(401);
-                    setIsLoading(false);
-                }
+                setError(401); 
+                setIsLoading(false);
                 return;
             }
 
             try {
                 const response = await fetch(`${API_BASE_URL}/media/artwork/${trackUuid}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    signal, 
                 });
 
-                if (!isMounted || currentRequestRef.current !== requestId) return;
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
 
-                if (response.ok) {
-                    const blob = await response.blob();
-                    const objectURL = URL.createObjectURL(blob);
+                const blob = await response.blob();
+                const objectURL = URL.createObjectURL(blob);
+
+                if (!signal.aborted) {
                     setArtworkSrc(objectURL);
                     artworkCache.set(trackUuid, { src: objectURL, error: null });
-                } else {
-                    setErrorStatus(response.status);
-                    artworkCache.set(trackUuid, { src: null, error: response.status });
                 }
             } catch (err) {
-                if (isMounted && currentRequestRef.current === requestId) {
-                    setErrorStatus(503); 
-                    artworkCache.set(trackUuid, { src: null, error: 503 });
+                if (err.name !== 'AbortError') {
+                    console.error('Failed to fetch artwork:', err);
+                    const status = err.message.includes('status:') ? parseInt(err.message.split('status: ')[1]) : 503;
+                    setError(status);
+                    artworkCache.set(trackUuid, { src: null, error: status });
                 }
             } finally {
-                if (isMounted && currentRequestRef.current === requestId) {
+                if (!signal.aborted) {
                     setIsLoading(false);
                 }
             }
@@ -80,14 +85,14 @@ export const useArtwork = (track) => {
 
         fetchArtwork();
 
+        
         return () => {
-            isMounted = false;
+            abortController.abort();
         };
-    }, [trackUuid, track]); 
+    }, [trackUuid, track?.isLocal, track?.artwork]); 
 
-    return { artworkSrc, isLoading, errorStatus };
+    return { artworkSrc, isLoading, error };
 };
-
 
 export const clearArtworkCache = () => {
     for (const [, cached] of artworkCache) {

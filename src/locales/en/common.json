@@ -1,0 +1,29 @@
+{
+  "languageName": "English",
+  "header": {
+    "home": "Home",
+    "library": "Library",
+    "profile": "My Profile",
+    "logout": "Log Out",
+    "login": "Log In",
+    "register": "Register",
+    "settings": "Settings",
+    "searchPlaceholder": "Search...",
+    "adminPanel": "Admin Panel"
+  },
+  "userStatus": {
+    "admin": "Administrator",
+    "user": "User"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "ok": "OK",
+    "confirmation": "Confirmation",
+    "goHome": "Go to Home"
+  },
+  "app": {
+    "appName": "UniSound",
+    "authorizing": "Authorizing..."
+  }
+}

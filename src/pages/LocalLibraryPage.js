@@ -1,48 +1,81 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { usePlayer } from '../hooks/usePlayer';
 import TrackCard from '../components/Track/TrackCard';
-import { HardDrive, LoaderCircle, Music, Frown, Search, Filter, ArrowDownUp } from 'lucide-react';
+import { HardDrive, LoaderCircle, Music, Frown, Search, Filter, ArrowDownUp, X } from 'lucide-react';
 import { useSimpleDebounce } from '../hooks/useDebounce';
 import './LocalLibraryPage.css';
 
 const INITIAL_LOAD_COUNT = 50;
 const LOAD_MORE_COUNT = 25;
 
-const LibraryStatus = ({ isLoading, error, tracks, filteredTracks, query, duration }) => {
-    if (isLoading) {
+
+const LibraryFilters = ({ filters, setFilters, disabled }) => {
+    const handleFilterChange = (key, value) => {
+        setFilters(prev => ({ ...prev, [key]: value }));
+    };
+    const resetFilters = () => {
+        setFilters({ searchQuery: '', durationFilter: 0, sortBy: 'title-asc' });
+    };
+    const hasActiveFilters = filters.searchQuery || filters.durationFilter > 0;
+    return (
+        <div className="library-filters glass glass--soft">
+            <div className="filter-item search-filter">
+                <Search size={20} className="filter-icon" />
+                <input type="text" placeholder="Поиск по названию, исполнителю, альбому..." value={filters.searchQuery} onChange={(e) => handleFilterChange('searchQuery', e.target.value)} className="filter-input" disabled={disabled}/>
+            </div>
+            <div className="filter-item duration-filter">
+                <Filter size={20} className="filter-icon" />
+                <input type="number" min="0" placeholder="Длительность от (сек)" value={filters.durationFilter || ''} onChange={(e) => handleFilterChange('durationFilter', Number(e.target.value))} className="filter-input duration-input" disabled={disabled}/>
+            </div>
+            <div className="filter-item sort-filter">
+                <ArrowDownUp size={20} className="filter-icon" />
+                <select value={filters.sortBy} onChange={(e) => handleFilterChange('sortBy', e.target.value)} className="filter-input sort-select" disabled={disabled}>
+                    <option value="title-asc">По названию (А-Я)</option>
+                    <option value="artist-asc">По исполнителю (А-Я)</option>
+                    <option value="duration-desc">По длительности (сначала долгие)</option>
+                    <option value="duration-asc">По длительности (сначала короткие)</option>
+                </select>
+            </div>
+            {hasActiveFilters && (<button onClick={resetFilters} className="clear-filters-btn" title="Сбросить фильтры"><X size={16} /></button>)}
+        </div>
+    );
+};
+
+
+const LibraryStatus = ({ status, error, tracksCount, filteredTracksCount }) => {
+    if (status === 'searching' && tracksCount === 0) {
         return (
-            <div className="status-message loading-state">
-                <LoaderCircle className="animate-spin" size={48} />
-                <h2>Сканируем вашу медиатеку...</h2>
-                <p>Это может занять некоторое время при первом запуске.</p>
+            <div className="library-status-indicator">
+                <LoaderCircle size={48} className="animate-spin" />
+                <h3 className="status-title">Идет сканирование...</h3>
+                <p className="status-subtitle">Ищем вашу музыку. Это может занять некоторое время при первом запуске.</p>
             </div>
         );
     }
     if (error) {
         return (
-            <div className="status-message error-state">
+            <div className="library-status-indicator">
                 <Frown size={48} />
-                <h2>Ошибка сканирования</h2>
-                <p>{error}</p>
+                <h3 className="status-title">Ошибка сканирования</h3>
+                <p className="status-subtitle">{error}</p>
             </div>
         );
     }
-    if (tracks.length === 0) {
+    if (tracksCount > 0 && filteredTracksCount === 0) {
         return (
-            <div className="status-message empty-state">
-                <Music size={64} />
-                <h2>Ваша медиатека пуста</h2>
-                <p>В стандартной папке "Музыка" не найдено поддерживаемых аудиофайлов.</p>
-                <p>Нажмите "Пересканировать", чтобы повторить попытку.</p>
+             <div className="library-status-indicator">
+                <Search size={48} />
+                <h3 className="status-title">Ничего не найдено</h3>
+                <p className="status-subtitle">Попробуйте изменить фильтры или сбросить их.</p>
             </div>
-        );
+        )
     }
-    if (filteredTracks.length === 0) {
+    if (tracksCount === 0 && status === 'done') {
         return (
-            <div className="status-message empty-state">
-                <Search size={64} />
-                <h2>Ничего не найдено</h2>
-                <p>Треки, соответствующие вашему запросу, отсутствуют.</p>
+            <div className="library-status-indicator">
+                <Music size={48} />
+                <h3 className="status-title">Медиатека пуста</h3>
+                <p className="status-subtitle">Нажмите "Пересканировать", чтобы найти музыку на вашем компьютере.</p>
             </div>
         );
     }
@@ -53,90 +86,103 @@ const LibraryStatus = ({ isLoading, error, tracks, filteredTracks, query, durati
 const LocalLibraryPage = () => {
     const player = usePlayer();
     
+    
     const [allTracks, setAllTracks] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [scanStatus, setScanStatus] = useState('idle'); 
     const [error, setError] = useState(null);
+    const [filters, setFilters] = useState({ searchQuery: '', durationFilter: 0, sortBy: 'title-asc' });
 
-    const [searchQuery, setSearchQuery] = useState('');
-    const [durationFilter, setDurationFilter] = useState(0);
-    const [sortBy, setSortBy] = useState('title-asc');
-
-    const debouncedSearchQuery = useSimpleDebounce(searchQuery, 350); 
-    const debouncedDurationFilter = useSimpleDebounce(durationFilter, 350); 
+    const debouncedQuery = useSimpleDebounce(filters.searchQuery, 350); 
+    const debouncedDuration = useSimpleDebounce(filters.durationFilter, 350); 
 
     const [visibleCount, setVisibleCount] = useState(INITIAL_LOAD_COUNT);
     
     const observer = useRef();
+    const isLoading = scanStatus === 'searching' || scanStatus === 'processing';
+    
     const loaderRef = useCallback(node => {
         if (isLoading) return;
         if (observer.current) observer.current.disconnect();
-        
         observer.current = new IntersectionObserver(entries => {
             if (entries[0].isIntersecting) {
                 setVisibleCount(prev => prev + LOAD_MORE_COUNT);
             }
         });
-        
         if (node) observer.current.observe(node);
     }, [isLoading]);
 
-    const handleScanLibrary = useCallback(async () => {
-        setIsLoading(true);
-        setError(null);
-        try {
-            const tracks = await window.electronAPI.scanMusicLibrary();
-            setAllTracks(tracks);
-            if (tracks.length === 0) {
-                setError('В стандартной папке "Музыка" не найдено поддерживаемых аудиофайлов.');
-            }
-        } catch (err) {
-            console.error("Ошибка сканирования медиатеки:", err);
-            setError('Произошла ошибка при сканировании файлов.');
-        } finally {
-            setIsLoading(false);
-        }
-    }, []);
 
+    
     useEffect(() => {
-        handleScanLibrary();
-    }, [handleScanLibrary]);
+        setError(null);
+        setScanStatus('searching');
 
-    const filteredAndSortedTracks = useMemo(() => {
-        const lowercasedQuery = debouncedSearchQuery.toLowerCase();
         
+        window.electronAPI.getInitialTracks()
+            .then(cachedTracks => {
+                setAllTracks(cachedTracks);
+                
+                window.electronAPI.startSmartScan();
+            })
+            .catch(err => {
+                console.error("Ошибка при загрузке треков из БД:", err);
+                setError('Не удалось загрузить медиатеку из кэша.');
+                setScanStatus('done'); 
+            });
+
+        
+        const unsubStatus = window.electronAPI.onScanStatus(status => setScanStatus(status));
+        
+        const unsubAdded = window.electronAPI.onTracksAdded(newTracks => {
+            setAllTracks(current => {
+                const updatedTracks = new Map(current.map(t => [t.uuid, t]));
+                newTracks.forEach(t => updatedTracks.set(t.uuid, t));
+                return Array.from(updatedTracks.values());
+            });
+        });
+
+        const unsubRemoved = window.electronAPI.onTracksRemoved(removedPaths => {
+            setAllTracks(current => current.filter(t => !removedPaths.includes(t.originalPath)));
+        });
+
+        
+        return () => {
+            unsubStatus();
+            unsubAdded();
+            unsubRemoved();
+        };
+    }, []); 
+
+    
+    const handleForceRescan = useCallback(() => {
+        if (isLoading) return;
+        setError(null);
+        setScanStatus('searching');
+        window.electronAPI.forceRescan();
+    }, [isLoading]);
+
+    
+    const filteredAndSortedTracks = useMemo(() => {
         let filtered = allTracks.filter(track => {
+            const lowercasedQuery = debouncedQuery.toLowerCase();
             const matchesSearch = lowercasedQuery
                 ? track.title.toLowerCase().includes(lowercasedQuery) ||
                   track.artist.toLowerCase().includes(lowercasedQuery) ||
                   track.album.toLowerCase().includes(lowercasedQuery)
                 : true;
-            
-            const matchesDuration = debouncedDurationFilter > 0
-                ? track.duration >= debouncedDurationFilter
-                : true;
-
+            const matchesDuration = debouncedDuration > 0 ? track.duration >= debouncedDuration : true;
             return matchesSearch && matchesDuration;
         });
 
-        switch (sortBy) {
-            case 'title-asc':
-                filtered.sort((a, b) => a.title.localeCompare(b.title));
-                break;
-            case 'artist-asc':
-                filtered.sort((a, b) => a.artist.localeCompare(b.artist));
-                break;
-            case 'duration-desc':
-                filtered.sort((a, b) => b.duration - a.duration);
-                break;
-            case 'duration-asc':
-                filtered.sort((a, b) => a.duration - a.duration);
-                break;
-            default:
-                break;
+        switch (filters.sortBy) {
+             case 'title-asc': filtered.sort((a, b) => a.title.localeCompare(b.title)); break;
+             case 'artist-asc': filtered.sort((a, b) => a.artist.localeCompare(b.artist)); break;
+             case 'duration-desc': filtered.sort((a, b) => b.duration - a.duration); break;
+             case 'duration-asc': filtered.sort((a, b) => a.duration - b.duration); break;
+             default: break;
         }
-
         return filtered;
-    }, [allTracks, debouncedSearchQuery, debouncedDurationFilter, sortBy]);
+    }, [allTracks, debouncedQuery, debouncedDuration, filters.sortBy]);
     
     useEffect(() => {
         setVisibleCount(INITIAL_LOAD_COUNT);
@@ -150,68 +196,29 @@ const LocalLibraryPage = () => {
     const hasMore = visibleCount < filteredAndSortedTracks.length;
 
     return (
-        <div className="home-page-content library-page">
+        <div className="home-page-content library-page fully-rounded">
             <section>
                 <header className="library-header">
                     <div>
                         <h2 className="section-title">Ваша оффлайн-медиатека</h2>
                         <p className="section-subtitle">
-                            Найдено {filteredAndSortedTracks.length} треков из {allTracks.length}
+                            Найдено {filteredAndSortedTracks.length.toLocaleString()} треков
                         </p>
                     </div>
-                    <button onClick={handleScanLibrary} className="rescan-button" disabled={isLoading}>
-                        <HardDrive size={18} />
+                    <button onClick={handleForceRescan} className="rescan-button" disabled={isLoading}>
+                        {isLoading ? ( <LoaderCircle size={18} className="animate-spin" /> ) : ( <HardDrive size={18} /> )}
                         <span>{isLoading ? 'Сканирование...' : 'Пересканировать'}</span>
                     </button>
                 </header>
                 
-                <div className="library-filters">
-                    <div className="filter-item search-filter">
-                        <Search size={20} className="filter-icon" />
-                        <input
-                            type="text"
-                            placeholder="Поиск по названию, исполнителю, альбому..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="filter-input"
-                        />
-                    </div>
-                    <div className="filter-item duration-filter">
-                        <Filter size={20} className="filter-icon" />
-                        <label htmlFor="duration">Длительность от (сек):</label>
-                        <input
-                            id="duration"
-                            type="number"
-                            min="0"
-                            placeholder="0"
-                            value={durationFilter || ''}
-                            onChange={(e) => setDurationFilter(Number(e.target.value))}
-                            className="filter-input duration-input"
-                        />
-                    </div>
-                     <div className="filter-item sort-filter">
-                        <ArrowDownUp size={20} className="filter-icon" />
-                        <label htmlFor="sort">Сортировка:</label>
-                        <select 
-                            id="sort"
-                            value={sortBy} 
-                            onChange={(e) => setSortBy(e.target.value)} 
-                            className="filter-input sort-select"
-                        >
-                            <option value="title-asc">По названию (А-Я)</option>
-                            <option value="artist-asc">По исполнителю (А-Я)</option>
-                            <option value="duration-desc">По длительности (сначала долгие)</option>
-                            <option value="duration-asc">По длительности (сначала короткие)</option>
-                        </select>
-                    </div>
-                </div>
+                <LibraryFilters filters={filters} setFilters={setFilters} disabled={isLoading || allTracks.length === 0} />
                 
                 <div className="library-content">
                     <LibraryStatus 
-                        isLoading={isLoading} 
+                        status={scanStatus}
                         error={error}
-                        tracks={allTracks}
-                        filteredTracks={filteredAndSortedTracks}
+                        tracksCount={allTracks.length}
+                        filteredTracksCount={filteredAndSortedTracks.length}
                     />
                     
                     {tracksToRender.length > 0 && (

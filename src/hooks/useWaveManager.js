@@ -1,19 +1,21 @@
 
+
 import { useState, useCallback } from 'react';
 import api from '../services/api';
-
 
 export const useWaveManager = (playlistManager) => {
     const [isWaveMode, setIsWaveMode] = useState(false);
     const [isFetchingNextTrack, setIsFetchingNextTrack] = useState(false);
 
-    const fetchNextWaveTrack = useCallback(async () => {
+    const fetchAndAppendWaveTrack = useCallback(async () => {
         if (isFetchingNextTrack) return null;
         
         setIsFetchingNextTrack(true);
         try {
             const nextTrack = await api.wave.getNextTrack();
-            playlistManager.addTrackToPlaylist(nextTrack);
+            if (nextTrack) {
+                playlistManager.addTrackToPlaylist(nextTrack);
+            }
             return nextTrack;
         } catch (error) {
             console.error("Failed to load next wave track:", error);
@@ -24,20 +26,35 @@ export const useWaveManager = (playlistManager) => {
     }, [isFetchingNextTrack, playlistManager]);
 
     const startWave = useCallback(async () => {
+        
         try {
-            const initialTracks = await Promise.all([
-                api.wave.getNextTrack(), 
-                api.wave.getNextTrack()
-            ]);
-            
-            setIsWaveMode(true);
-            playlistManager.setTrackList(initialTracks, 0);
-            return true;
+            await api.wave.clearWaveSession();
+            console.log('[WaveManager] Server wave session cleared successfully.');
         } catch (error) {
-            console.error("Failed to start wave:", error);
+            console.warn('[WaveManager] Could not clear server wave session. Recommendations might repeat.', error);
+        }
+        
+
+        setIsWaveMode(true);
+        
+        
+        const initialTrack = await api.wave.getNextTrack();
+
+        if (initialTrack) {
+            
+            playlistManager.setTrackList([initialTrack], 0);
+            
+            
+            
+            fetchAndAppendWaveTrack();
+            
+            return true;
+        } else {
+            console.error("Failed to start wave: could not fetch initial track.");
+            setIsWaveMode(false);
             return false;
         }
-    }, [playlistManager]);
+    }, [playlistManager, fetchAndAppendWaveTrack]);
 
     const stopWave = useCallback(() => {
         setIsWaveMode(false);
@@ -52,7 +69,7 @@ export const useWaveManager = (playlistManager) => {
                 payload.track_uuid = currentTrack.uuid; 
                 break;
             case 'do_not_recommend_artist': 
-                payload.artist_name = currentTrack.artist; 
+                payload.artist_name = currentTrack.primaryArtistName;
                 break;
             case 'do_not_recommend_genre': 
                 if (!currentTrack.genre) return false;
@@ -70,27 +87,21 @@ export const useWaveManager = (playlistManager) => {
             return false;
         }
     }, [isWaveMode]);
-
-    const checkIfShouldFetchNext = useCallback(() => {
-        const { playlist, currentTrackIndex } = playlistManager;
-        return isWaveMode && currentTrackIndex >= playlist.length - 2;
-    }, [isWaveMode, playlistManager]);
-
+    
     const autoFetchNextIfNeeded = useCallback(async () => {
-        if (checkIfShouldFetchNext()) {
-            return await fetchNextWaveTrack();
+        const { playlist, currentTrackIndex } = playlistManager;
+        if (isWaveMode && currentTrackIndex >= playlist.length - 2) {
+            await fetchAndAppendWaveTrack();
         }
-        return null;
-    }, [checkIfShouldFetchNext, fetchNextWaveTrack]);
+    }, [isWaveMode, playlistManager, fetchAndAppendWaveTrack]);
 
     return {
         isWaveMode,
         isFetchingNextTrack,
-        fetchNextWaveTrack,
         startWave,
         stopWave,
         submitWaveFeedback,
-        checkIfShouldFetchNext,
-        autoFetchNextIfNeeded
+        autoFetchNextIfNeeded,
+        fetchAndAppendWaveTrack,
     };
 };

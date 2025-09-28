@@ -1,0 +1,9 @@
+{
+  "loading": "正在加载曲目信息...",
+  "error": "加载曲目信息失败。",
+  "plays": "次播放",
+  "likes": "个喜欢",
+  "lyrics": "歌词",
+  "lyricsLoading": "正在加载歌词...",
+  "lyricsNotFound": "未找到该曲目的歌词。"
+}

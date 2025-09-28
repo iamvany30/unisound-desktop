@@ -13,20 +13,28 @@ export const usePlaylistManager = (initialState = {}) => {
 
     const canGoNext = useCallback(() => {
         if (playlist.length === 0) return false;
+        const isWaveMode = playlist.some(track => track.isFromWave);
+        if (isWaveMode) return true;
+
         const isLastTrack = currentTrackIndex === playlist.length - 1;
         return !isLastTrack || repeatMode !== 'off';
-    }, [playlist.length, currentTrackIndex, repeatMode]);
+    }, [playlist, currentTrackIndex, repeatMode]);
 
     const canGoPrev = useCallback(() => {
         return currentTrackIndex > 0;
     }, [currentTrackIndex]);
 
     const goToNext = useCallback(() => {
-        if (!canGoNext()) return false;
-        const nextTrackIndex = (currentTrackIndex + 1) % playlist.length;
-        setCurrentTrackIndex(nextTrackIndex);
-        return true;
-    }, [canGoNext, currentTrackIndex, playlist.length]);
+        if (currentTrackIndex < playlist.length - 1) {
+            setCurrentTrackIndex(prevIndex => prevIndex + 1);
+            return true;
+        }
+        if (repeatMode === 'all' && playlist.length > 0) {
+            setCurrentTrackIndex(0);
+            return true;
+        }
+        return false;
+    }, [currentTrackIndex, playlist.length, repeatMode]);
 
     const goToPrev = useCallback(() => {
         if (!canGoPrev()) return false;
@@ -37,6 +45,15 @@ export const usePlaylistManager = (initialState = {}) => {
     const setTrackList = useCallback((tracks, startIndex = 0) => {
         setPlaylist(tracks);
         setCurrentTrackIndex(startIndex);
+    }, []);
+    
+    const addTrackToPlaylist = useCallback((track) => {
+        setPlaylist(prevPlaylist => {
+            if (prevPlaylist.some(t => t.uuid === track.uuid)) {
+                return prevPlaylist;
+            }
+            return [...prevPlaylist, track];
+        });
     }, []);
 
     const playTrackFromPlaylist = useCallback(async (track, trackList = []) => {
@@ -89,6 +106,7 @@ export const usePlaylistManager = (initialState = {}) => {
         setTrackList,
         playTrackFromPlaylist,
         toggleRepeat,
-        clearPlaylist
+        clearPlaylist,
+        addTrackToPlaylist,
     };
 };

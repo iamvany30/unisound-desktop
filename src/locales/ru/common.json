@@ -1,22 +1,43 @@
 {
-    "header": {
-      "home": "Главная",
-      "library": "Библиотека",
-      "profile": "Мой профиль",
-      "logout": "Выйти",
-      "login": "Войти",
-      "register": "Регистрация",
-      "settings": "Настройки",
-      "searchPlaceholder": "Поиск...",
-      "adminPanel": "Админ-панель"
-    },
-    "common": {
-      "cancel": "Отмена",
-      "confirm": "Подтвердить",
-      "ok": "OK",
-      "confirmation": "Подтверждение"
-    },
-    "app": {
-      "authorizing": "Авторизация..."
-    }
-  }
+  "app": {
+    "appName": "UniSound"
+  },
+  "header": {
+    "home": "Главная",
+    "library": "Медиатека",
+    "likedSongs": "Мне нравится",
+    "profile": "Профиль",
+    "settings": "Настройки",
+    "adminPanel": "Админ-панель",
+    "logout": "Выйти",
+    "login": "Войти",
+    "searchPlaceholder": "Поиск треков, артистов, альбомов...",
+    "windowControls": "Управление окном",
+    "minimize": "Свернуть",
+    "maximize": "Развернуть",
+    "restore": "Восстановить",
+    "close": "Закрыть",
+    "goHome": "Перейти на главную"
+  },
+  "likedSongs": {
+    "trackCount": "{{count}} треков",
+    "trackCount_plural": "{{count}} трека",
+    "trackCount_plural_5": "{{count}} треков",
+    "empty": "Вы еще не добавили ни одного трека в 'Мне нравится'.",
+    "error": "Не удалось загрузить список любимых треков.",
+    "retry": "Повторить"
+  },
+  "userStatus": {
+    "admin": "Администратор",
+    "user": "пользователь"
+  },
+  "languageName": "Русский",
+  "cancel": "Отмена",
+  "confirm": "Подтвердить",
+  "confirmation": "Подтверждение",
+  "ok": "OK",
+  "save": "Сохранить",
+  "delete": "Удалить",
+  "reset": "Сбросить",
+  "loading": "Загрузка..."
+}

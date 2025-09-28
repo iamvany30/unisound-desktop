@@ -1,0 +1,8 @@
+{
+  "waveHero": {
+    "myWave": "我的专属推荐",
+    "play": "播放"
+  },
+  "recommendations": "为您推荐",
+  "loadError": "加载主页数据失败。"
+}

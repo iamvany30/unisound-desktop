@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useStatus } from '../../context/StatusContext';
 import { CheckCircle, AlertTriangle, WifiOff } from 'lucide-react';

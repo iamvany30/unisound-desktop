@@ -2,6 +2,8 @@ const { app, BrowserWindow, protocol } = require("electron");
 const path = require("path");
 const log = require('electron-log');
 
+const { initDatabase, closeDatabase } = require('./modules/database');
+
 class UniSoundApp {
   constructor() {
     this.isDev = !app.isPackaged;
@@ -83,12 +85,12 @@ class UniSoundApp {
 
   registerAppEvents() {
     protocol.registerSchemesAsPrivileged([
-        { scheme: 'unisound-local', privileges: { standard: true, supportFetch: true, secure: true } }
+        { scheme: 'unisound-local', privileges: { standard: true, supportFetch: true, secure: true, stream: true } }
     ]);
 
     app.whenReady().then(() => this.onReady());
     app.on('activate', () => {
-      if (BrowserWindow.getAllWindows().length === 0) this.createMainWindow();
+      if (BrowserWindow.getAllWindows().length === 0) this.onReady();
     });
     app.on('window-all-closed', () => {
       if (process.platform !== 'darwin') this.gracefulShutdown();
@@ -100,36 +102,57 @@ class UniSoundApp {
   async onReady() {
     try {
       log.info("=== App Ready Event ===");
+      
+      initDatabase();
+      log.info("[OK] Database initialized");
 
       protocol.registerFileProtocol('unisound-local', (request, callback) => {
-          const url = request.url.replace('unisound-local://', '');
-          try {
-              return callback(decodeURI(url));
-          }
-          catch (error) {
-              console.error('Не удалось обработать unisound-local URL', error);
-          }
+        try {
+            const url = request.url.substring('unisound-local://'.length);
+            let decodedPath = decodeURI(url);
+            
+            if (process.platform === 'win32') {
+                if (decodedPath.startsWith('/')) {
+                    decodedPath = decodedPath.substring(1);
+                }
+                if (/^[a-zA-Z]\//.test(decodedPath)) {
+                    decodedPath = decodedPath.charAt(0) + ':' + decodedPath.substring(1);
+                }
+            }
+            
+            const finalPath = path.normalize(decodedPath);
+            return callback({ path: finalPath });
+
+        } catch (error) {
+            console.error(`[Protocol] Ошибка обработки URL '${request.url}':`, error);
+            return callback({ error: -6 });
+        }
       });
       
-      const [ { createMainWindow }, { createTray }, { initUpdater }, { initIpcHandlers }, { registerShortcuts } ] = await Promise.all([
-        this.loadModule('main-window'),
+      const { createWindow } = await this.loadModule('main-window');
+      
+      const webPreferences = {
+        preload: path.join(__dirname, "preload.js"),
+        contextIsolation: true,
+        nodeIntegration: false,
+        sandbox: true,
+        backgroundThrottling: false,
+      };
+
+      this.mainWindow = createWindow(this.isDev, webPreferences);
+      log.info("[OK] Main window created. Initializing other modules...");
+      
+      if (this.isDev) {
+        this.mainWindow.webContents.openDevTools();
+      }
+
+      const [ { createTray }, { initUpdater }, { initIpcHandlers }, { registerShortcuts } ] = await Promise.all([
         this.loadModule('tray'),
         this.loadModule('app-updater'),
         this.loadModule('ipc-handlers'),
         this.loadModule('shortcuts')
       ]);
       
-      const webPreferences = {
-        preload: path.join(__dirname, "preload.js"),
-        contextIsolation: true,
-        nodeIntegration: false,
-        sandbox: false,
-        backgroundThrottling: false,
-      };
-
-      this.mainWindow = createMainWindow(this.isDev, webPreferences);
-      log.info("[OK] Main window created with correct webPreferences");
-
       this.tray = createTray(this.mainWindow, this.isDev);
       log.info("[OK] Tray created");
       
@@ -139,8 +162,10 @@ class UniSoundApp {
       initIpcHandlers(this.mainWindow);
       log.info("[OK] IPC handlers initialized");
       
-      registerShortcuts(this.mainWindow);
-      log.info("[OK] Global shortcuts registered");
+      setTimeout(() => {
+        registerShortcuts(this.mainWindow);
+        log.info("[OK] Global shortcuts registered");
+      }, 3000);
 
       log.info("=== Application Successfully Started ===");
     } catch (error) {
@@ -162,6 +187,9 @@ class UniSoundApp {
     if (this.tray && !this.tray.isDestroyed()) {
       this.tray.destroy();
     }
+    
+    closeDatabase();
+    
     log.info("Cleanup completed");
   }
 }
@@ -171,4 +199,4 @@ try {
 } catch (error) {
   log.error("Failed to create UniSound app instance:", error);
   process.exit(1);
-} 
+}

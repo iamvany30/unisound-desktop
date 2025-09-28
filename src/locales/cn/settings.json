@@ -1,0 +1,89 @@
+{
+  "title": "设置",
+  "common": {
+    "title": "通用"
+  },
+  "appearance": {
+    "title": "外观",
+    "theme": "主题",
+    "themeLight": "浅色",
+    "themeDark": "深色",
+    "themeSystem": "跟随系统",
+    "density": "界面密度",
+    "densityComfortable": "舒适",
+    "densityCompact": "紧凑",
+    "glassAlpha": "面板不透明度",
+    "glassBlur": "模糊强度",
+    "colorDescription": "自定义应用程序的主要强调色。",
+    "resetColorButton": "重置颜色",
+    "background": "背景图片",
+    "backgroundDescription": "为应用程序背景设置自定义图片。",
+    "uploadButton": "上传 .png 或 .jpg",
+    "blur": "背景模糊级别",
+    "blurDescription": "调整模糊效果的强度。",
+    "resetButton": "重置为默认",
+    "resetConfirmTitle": "重置背景",
+    "resetConfirmMessage": "您确定要将背景重置为默认值吗？",
+    "resetSuccessMessage": "背景设置已重置。",
+    "fileErrorTitle": "文件错误",
+    "fileErrorMessage": "请选择一个图片文件（PNG, JPG）。"
+  },
+  "sound": {
+    "title": "声音",
+    "description": "根据您的偏好自定义声音。",
+    "preset": "预设",
+    "default": "默认",
+    "manual": "自定义",
+    "builtIn": "内置",
+    "myPresets": "我的预设",
+    "savePresetTitle": "保存预设",
+    "deletePresetTitle": "删除预设",
+    "deleteConfirm": "您确定要删除 “{{presetName}}” 预设吗？"
+  },
+  "data": {
+    "title": "数据"
+  },
+  "video": {
+    "title": "视频预加载",
+    "description": "在后台自动加载下一个视频以实现即时播放。"
+  },
+  "quality": {
+    "title": "音频质量",
+    "description": "高质量需要更多数据，加载时间可能更长。",
+    "low": "低",
+    "standard": "标准",
+    "high": "高",
+    "changed": "音频质量将应用于下一首曲目。"
+  },
+  "notifications": {
+    "groupTitle": "通知",
+    "title": "推送通知",
+    "enable": "启用",
+    "subscribing": "正在订阅...",
+    "enabled": "已启用",
+    "blocked": "已阻止",
+    "success": "通知已成功启用！",
+    "successTitle": "太好了！",
+    "error": "启用通知失败。",
+    "errorTitle": "错误",
+    "modal": {
+      "title": "保持最新",
+      "description": "我们希望为您发送重要事件的通知：",
+      "feature1": "您喜爱的艺术家发布的新作品",
+      "feature2": "新的个人推荐",
+      "feature3": "无广告或垃圾信息。",
+      "info": "您可以随时更改这些设置。"
+    }
+  },
+  "fullReset": {
+    "title": "完全重置",
+    "description": "这将删除所有本地应用程序数据并注销您的账户。",
+    "button": "执行重置",
+    "confirm": "您确定吗？所有本地数据都将被清除。",
+    "success": "重置完成。应用程序现在将重新加载。",
+    "successTitle": "重置完成"
+  },
+  "language": {
+    "title": "界面语言"
+  }
+}

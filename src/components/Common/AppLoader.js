@@ -1,11 +1,14 @@
-
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import './AppLoader.css'; 
 
 const AppLoader = ({ progress, statusText }) => {
+    
+    const { t } = useTranslation('common');
+
     return (
         <div className="app-loader-container">
-            <div className="app-loader-card glass">
+            <div className="app-loader-card">
                 
                 <div className="app-loader-visualizer">
                     <span />
@@ -15,7 +18,7 @@ const AppLoader = ({ progress, statusText }) => {
                     <span />
                 </div>
                 
-                <h1 className="app-loader-title">UniSound</h1>
+                <h1 className="app-loader-title">{t('app.appName')}</h1>
                 
                 <div className="app-loader-progress-bar">
                     <div 

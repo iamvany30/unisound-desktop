@@ -1,0 +1,9 @@
+{
+  "loading": "Loading track information...",
+  "error": "Failed to load track information.",
+  "plays": "plays",
+  "likes": "likes",
+  "lyrics": "Lyrics",
+  "lyricsLoading": "Loading lyrics...",
+  "lyricsNotFound": "Lyrics for this track were not found."
+}
