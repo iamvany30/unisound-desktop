@@ -1,6 +1,6 @@
 {
   "name": "unisound-react",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "description": "A cross-platform desktop music player built with React and Electron. Stream music from online sources or play your local files with a modern, dynamic interface.",
   "author": {
