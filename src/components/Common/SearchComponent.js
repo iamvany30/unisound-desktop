@@ -3,12 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { Search, LoaderCircle, X } from 'lucide-react';
 import api from '../../services/api';
 import SearchResultsDropdown from './SearchResultsDropdown';
+import { useDebounce } from '../../hooks/useDebounce'; 
 import './SearchComponent.css';
 
 
 const useClickOutside = (ref, handler) => {
     useEffect(() => {
         const listener = (event) => {
+
             if (!ref.current || ref.current.contains(event.target)) {
                 return;
             }
@@ -23,21 +25,6 @@ const useClickOutside = (ref, handler) => {
     }, [ref, handler]);
 };
 
-
-const useDebounce = (value, delay) => {
-    const [debouncedValue, setDebouncedValue] = useState(value);
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedValue(value);
-        }, delay);
-        return () => {
-            clearTimeout(handler);
-        };
-    }, [value, delay]);
-    return debouncedValue;
-};
-
-
 const searchCache = new Map();
 
 const SearchComponent = () => {
@@ -50,7 +37,9 @@ const SearchComponent = () => {
     
     const searchRef = useRef(null);
     const abortControllerRef = useRef(null);
-    const debouncedQuery = useDebounce(query, 350);
+
+ 
+    const { debouncedValue: debouncedQuery } = useDebounce(query, 350);
 
     useClickOutside(searchRef, () => setIsFocused(false));
 
@@ -89,12 +78,18 @@ const SearchComponent = () => {
         };
 
         performSearch();
+        
+        return () => {
+            abortControllerRef.current?.abort();
+        };
+
     }, [debouncedQuery]);
 
     const handleClear = useCallback(() => {
         setQuery('');
         setResults(null);
         setError(null);
+        searchRef.current?.querySelector('input')?.focus();
     }, []);
 
     const showDropdown = isFocused && (query.length > 0);
@@ -110,6 +105,7 @@ const SearchComponent = () => {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onFocus={() => setIsFocused(true)}
+                    aria-label="Поиск по медиатеке"
                 />
                 <div className="search-icon-right">
                     {isLoading && <LoaderCircle size={18} className="animate-spin" />}

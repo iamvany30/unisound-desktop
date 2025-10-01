@@ -16,7 +16,7 @@ export const useMediaSessionManager = (currentTrack, isPlaying, playerActions, p
             navigator.mediaSession.playbackState = 'none';
             try {
                 navigator.mediaSession.setPositionState(null);
-            } catch (e) { /* Игнорируем ошибки при сбросе */ }
+            } catch (e) {}
             return;
         }
 

@@ -11,14 +11,12 @@ export const usePlaylistManager = (initialState = {}) => {
         [playlist, currentTrackIndex]
     );
 
-    const canGoNext = useCallback(() => {
+    const canGoNext = useCallback((isWaveMode = false) => {
         if (playlist.length === 0) return false;
-        const isWaveMode = playlist.some(track => track.isFromWave);
         if (isWaveMode) return true;
-
         const isLastTrack = currentTrackIndex === playlist.length - 1;
         return !isLastTrack || repeatMode !== 'off';
-    }, [playlist, currentTrackIndex, repeatMode]);
+    }, [playlist.length, currentTrackIndex, repeatMode]);
 
     const canGoPrev = useCallback(() => {
         return currentTrackIndex > 0;
@@ -56,31 +54,25 @@ export const usePlaylistManager = (initialState = {}) => {
         });
     }, []);
 
-    const playTrackFromPlaylist = useCallback(async (track, trackList = []) => {
-        if (track.isLocal) {
-            const newPlaylist = trackList.length > 0 ? trackList : [track];
-            setPlaylist(newPlaylist);
-            const trackIndex = newPlaylist.findIndex(t => t.uuid === track.uuid);
-            setCurrentTrackIndex(trackIndex !== -1 ? trackIndex : 0);
-            return true;
-        }
+    const updateTrackInPlaylist = useCallback((updatedTrack) => {
+        setPlaylist(prevPlaylist => {
+            const newPlaylist = [...prevPlaylist];
+            const index = newPlaylist.findIndex(t => t.uuid === updatedTrack.uuid);
+            if (index !== -1) {
+                newPlaylist[index] = updatedTrack;
+            }
+            return newPlaylist;
+        });
+    }, []);
 
-        try {
-            const freshTrackData = await api.tracks.getDetails(track.uuid);
-            const newPlaylist = (trackList.length > 0 ? trackList : [track]).map(t => 
-                t.uuid === freshTrackData.uuid ? freshTrackData : t
-            );
-            setPlaylist(newPlaylist);
-            const trackIndex = newPlaylist.findIndex(t => t.uuid === freshTrackData.uuid);
-            setCurrentTrackIndex(trackIndex !== -1 ? trackIndex : 0);
-            return true;
-        } catch (error) {
-            const newPlaylist = trackList.length > 0 ? trackList : [track];
-            setPlaylist(newPlaylist);
-            const trackIndex = newPlaylist.findIndex(t => t.uuid === track.uuid);
-            setCurrentTrackIndex(trackIndex !== -1 ? trackIndex : 0);
-            return true;
-        }
+
+    const playTrackFromPlaylist = useCallback((track, trackList = []) => {
+        const newPlaylist = trackList.length > 0 ? trackList : [track];
+        const trackIndex = newPlaylist.findIndex(t => t.uuid === track.uuid);
+        
+        setPlaylist(newPlaylist);
+        setCurrentTrackIndex(trackIndex !== -1 ? trackIndex : 0);
+        return true;
     }, []);
 
     const toggleRepeat = useCallback((isWaveMode = false) => {
@@ -108,5 +100,6 @@ export const usePlaylistManager = (initialState = {}) => {
         toggleRepeat,
         clearPlaylist,
         addTrackToPlaylist,
+        updateTrackInPlaylist, 
     };
 };

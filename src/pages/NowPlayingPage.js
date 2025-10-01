@@ -13,11 +13,7 @@ import './NowPlayingPage.css';
 
 const UI_HIDE_DELAY = 3500; 
 
-/**
- * Извлекает доминирующий цвет из изображения.
- * @param {string} imageUrl - URL изображения.
- * @returns {Promise<[number, number, number]>} - Promise, который разрешается в [r, g, b] массив.
- */
+
 const extractDominantColor = (imageUrl) => {
     return new Promise((resolve) => {
         const img = new Image();
@@ -55,9 +51,7 @@ const extractDominantColor = (imageUrl) => {
 
 
 
-/**
- * Хук для управления автоматическим скрытием UI.
- */
+
 const useUIHider = (isPlaying, isOpen) => {
     const [isUIHidden, setIsUIHidden] = useState(false);
     const hideTimeoutRef = useRef(null);
@@ -78,9 +72,7 @@ const useUIHider = (isPlaying, isOpen) => {
     return { isUIHidden, resetHideTimer };
 };
 
-/**
- * Компонент для отображения текста с эффектом бегущей строки, если он не помещается.
- */
+
 const MarqueeText = memo(({ text }) => {
     const ref = useRef(null);
     const [isOverflowing, setIsOverflowing] = useState(false);
@@ -108,9 +100,7 @@ const MarqueeText = memo(({ text }) => {
 });
 MarqueeText.displayName = 'MarqueeText';
 
-/**
- * Компонент для фона страницы.
- */
+
 const PlayerBackground = memo(({ artworkSrc }) => (
     <div className="now-playing-bg" style={{ backgroundImage: artworkSrc ? `url(${artworkSrc})` : 'none' }} />
 ));

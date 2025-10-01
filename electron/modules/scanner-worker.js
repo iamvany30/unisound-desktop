@@ -4,12 +4,7 @@ const fs = require('fs/promises');
 const path = require('path');
 const musicMetadata = require('music-metadata');
 
-/**
- * Извлекает полные метаданные для одного аудиофайла.
- * @param {string} filePath - Абсолютный путь к файлу.
- * @param {number} mtime - Дата последнего изменения файла (в миллисекундах).
- * @returns {Promise<object|null>} Объект с данными трека или null в случае ошибки.
- */
+
 async function getTrackMetadata(filePath, mtime) {
     try {
         const metadata = await musicMetadata.parseFile(filePath);
@@ -42,11 +37,7 @@ async function getTrackMetadata(filePath, mtime) {
     }
 }
 
-/**
- * Рекурсивно находит все поддерживаемые аудиофайлы и их дату изменения.
- * @param {string} directory - Директория для сканирования.
- * @returns {Promise<Array<{path: string, mtime: number}>>} Массив объектов с путем и mtime.
- */
+
 async function findMusicFiles(directory) {
     let musicFiles = [];
     const supportedExtensions = ['.mp3', '.flac', '.wav', '.ogg', '.m4a', '.aac'];

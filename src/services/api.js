@@ -237,6 +237,11 @@ const api = {
             const encodedFilename = encodeURI(filename);
             return `${API_BASE_URL}/media/video/${encodedFilename}?token=${token}`;
         },
+        
+        getVideoHlsUrl: (hlsPath) => {
+            if (!hlsPath) return null;
+            return `${API_BASE_URL}/media/video/${hlsPath.replace(/\\/g, '/')}`;
+        },
     },
     karaoke: {
         getLrc: (trackUuid) => fetchApi(`/karaoke/lyrics/${trackUuid}`),

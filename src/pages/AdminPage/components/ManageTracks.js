@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../../../services/api';
 import { useModal } from '../../../context/ModalContext';
-import { useDebounce } from '../../../hooks/useDebounce';
+import { useSimpleDebounce } from '../../../hooks/useDebounce';
 import { LoaderCircle, Edit } from 'lucide-react';
 import ManageTrackModal from './ManageTrackModal'; 
 
@@ -102,7 +102,7 @@ const ManageTracks = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [tracks, setTracks] = useState([]);
     const [loading, setLoading] = useState(false);
-    const debouncedQuery = useDebounce(searchQuery, 500);
+    const debouncedQuery = useSimpleDebounce(searchQuery, 500);
     const { showModal, hideModal } = useModal();
 
 
