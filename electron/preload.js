@@ -9,6 +9,7 @@ const validInvokeChannels = [
     'theme:get-native-theme',
     'app:send-fake-update',
     'updater:start-download',
+    'updater:check-for-updates',
     'library:get-initial-tracks' 
 ];
 
@@ -68,6 +69,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onWindowStateChanged: (callback) => createEventHandler('window-state-changed', callback),
   getAppVersion: createInvokeHandler('app:get-version'),
   startDownload: createInvokeHandler('updater:start-download'),
+  checkForUpdates: createInvokeHandler('updater:check-for-updates'),
   quitAndInstall: createSendHandler('quit-and-install'),
   onUpdateMessage: (callback) => createEventHandler('update-message', callback),
   sendFakeUpdate: createInvokeHandler('app:send-fake-update'),

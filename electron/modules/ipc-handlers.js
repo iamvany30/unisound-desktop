@@ -1,8 +1,7 @@
-
 const { ipcMain, app, BrowserWindow, nativeTheme } = require('electron');
 
 const libraryManager = require('./library-manager');
-const { startDownload, quitAndInstall } = require('./app-updater');
+const { startDownload, quitAndInstall, checkForUpdates } = require('./app-updater');
 
 function initIpcHandlers(mainWindow) {
 
@@ -38,6 +37,11 @@ function initIpcHandlers(mainWindow) {
   ipcMain.handle('updater:start-download', async () => {
     console.log('[IPC] Получен запрос на начало загрузки обновления...');
     return await startDownload();
+  });
+
+  ipcMain.handle('updater:check-for-updates', () => {
+    console.log('[IPC] Запрос на проверку обновлений получен...');
+    checkForUpdates(true); 
   });
   
   ipcMain.on('quit-and-install', () => {
