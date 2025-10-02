@@ -10,80 +10,91 @@
     "themeDark": "深色",
     "themeSystem": "跟随系统",
     "density": "界面密度",
-    "densityComfortable": "舒适",
+    "densityComfortable": "标准",
     "densityCompact": "紧凑",
-    "glassAlpha": "面板不透明度",
+    "glassAlpha": "面板透明度",
     "glassBlur": "模糊强度",
-    "colorDescription": "自定义应用程序的主要强调色。",
+    "colorTitle": "主题色",
+    "colorDescription": "自定义应用程序的主要主题颜色。",
+    "hue": "色相",
+    "saturation": "饱和度",
+    "lightness": "亮度",
     "resetColorButton": "重置颜色",
     "background": "背景图片",
-    "backgroundDescription": "为应用程序背景设置自定义图片。",
+    "backgroundDescription": "为应用程序设置自定义背景图片。",
     "uploadButton": "上传 .png 或 .jpg",
     "blur": "背景模糊级别",
     "blurDescription": "调整模糊效果的强度。",
     "resetButton": "重置为默认",
     "resetConfirmTitle": "重置背景",
-    "resetConfirmMessage": "您确定要将背景重置为默认值吗？",
+    "resetConfirmMessage": "您确定要将背景重置为默认设置吗？",
     "resetSuccessMessage": "背景设置已重置。",
     "fileErrorTitle": "文件错误",
-    "fileErrorMessage": "请选择一个图片文件（PNG, JPG）。"
+    "fileErrorMessage": "请选择一个图片文件 (PNG, JPG)。",
+    "preview": {
+      "title": "动态标题",
+      "button": "按钮"
+    }
   },
   "sound": {
-    "title": "声音",
-    "description": "根据您的偏好自定义声音。",
+    "title": "音效",
+    "description": "根据您的喜好自定义音效",
     "preset": "预设",
     "default": "默认",
-    "manual": "自定义",
+    "manual": "手动调节",
     "builtIn": "内置",
     "myPresets": "我的预设",
     "savePresetTitle": "保存预设",
     "deletePresetTitle": "删除预设",
-    "deleteConfirm": "您确定要删除 “{{presetName}}” 预设吗？"
+    "deleteConfirm": "您确定要删除预设 \"{{presetName}}\" 吗？",
+    "selectPreset": "选择一个预设...",
+    "noResults": "未找到结果"
   },
   "data": {
     "title": "数据"
   },
   "video": {
     "title": "视频预加载",
-    "description": "在后台自动加载下一个视频以实现即时播放。"
+    "description": "在后台自动加载下一个视频，以实现即时播放。"
   },
   "quality": {
-    "title": "音频质量",
-    "description": "高质量需要更多数据，加载时间可能更长。",
-    "low": "低",
+    "title": "音质",
+    "description": "高音质需要更多流量，加载时间可能更长。",
+    "low": "较低",
     "standard": "标准",
-    "high": "高",
-    "changed": "音频质量将应用于下一首曲目。"
+    "high": "较高",
+    "changed": "音质设置将应用于下一首曲目。"
   },
   "notifications": {
     "groupTitle": "通知",
     "title": "推送通知",
     "enable": "启用",
-    "subscribing": "正在订阅...",
+    "subscribing": "订阅中...",
     "enabled": "已启用",
     "blocked": "已阻止",
     "success": "通知已成功启用！",
-    "successTitle": "太好了！",
+    "successTitle": "成功！",
     "error": "启用通知失败。",
     "errorTitle": "错误",
     "modal": {
-      "title": "保持最新",
-      "description": "我们希望为您发送重要事件的通知：",
-      "feature1": "您喜爱的艺术家发布的新作品",
-      "feature2": "新的个人推荐",
-      "feature3": "无广告或垃圾信息。",
+      "title": "及时了解最新动态",
+      "description": "我们希望在以下重要事件发生时向您发送通知：",
+      "feature1": "您喜欢的艺术家发布新作",
+      "feature2": "新的个性化推荐",
+      "feature3": "绝无广告或垃圾信息。",
       "info": "您可以随时更改这些设置。"
     }
   },
   "fullReset": {
     "title": "完全重置",
-    "description": "这将删除所有本地应用程序数据并注销您的账户。",
+    "description": "将删除所有本地应用程序数据并退出您的账户。",
     "button": "执行重置",
     "confirm": "您确定吗？所有本地数据都将被清除。",
-    "success": "重置完成。应用程序现在将重新加载。",
+    "success": "重置完成。应用程序即将重启。",
     "successTitle": "重置完成"
   },
   "language": {
-    "title": "界面语言"
+    "title": "界面语言",
+    "select": "选择语言..."
   }
 }

@@ -3,6 +3,32 @@
     "myWave": "My Wave",
     "play": "Play"
   },
-  "recommendations": "Made For You",
-  "loadError": "Failed to load data for the home page."
+  "recommendations": "Made for you",
+  "loadError": "Failed to load data for the home page.",
+  "wave": {
+    "modalTitle": "My Wave Settings",
+    "settingsAriaLabel": "Configure My Wave",
+    "description": "Adjust the track selection algorithm to get the most accurate recommendations.",
+    "exploration": {
+      "title": "Discovery",
+      "description": "Determines how often the Wave will suggest new music to you."
+    },
+    "favorites": {
+      "title": "Favorite Tracks",
+      "description": "Influences the frequency of tracks you've liked appearing."
+    },
+    "popularity": {
+      "title": "Popularity",
+      "description": "Balances between well-known hits and less popular music."
+    },
+    "era": {
+      "title": "Era",
+      "description": "Prefer music from the same era as your favorite tracks."
+    },
+    "saveSuccess": "Saved",
+    "settingsUpdated": "Wave settings updated successfully.",
+    "saveError": "Save Error",
+    "error": "Error",
+    "loadError": "Failed to load Wave settings. Please try again later."
+  }
 }

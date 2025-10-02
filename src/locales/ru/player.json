@@ -1,15 +1,15 @@
 {
-    "collapsePlayer": "Свернуть плеер",
-    "toggleLyrics": "Показать/скрыть текст",
-    "shuffle": "Перемешать",
-    "previousTrack": "Предыдущий трек",
-    "play": "Воспроизвести",
-    "pause": "Пауза",
-    "nextTrack": "Следующий трек",
-    "repeat": "Повтор",
-    "like": "Нравится",
-    "queue": "Очередь",
-    "volume": "Громкость",
-    "trackProgress": "Прогресс трека",
-    "coverArtFor": "Обложка для {{title}}"
-  }
+  "collapsePlayer": "Свернуть плеер",
+  "toggleLyrics": "Показать/скрыть текст",
+  "shuffle": "Перемешать",
+  "previousTrack": "Предыдущий трек",
+  "play": "Воспроизвести",
+  "pause": "Пауза",
+  "nextTrack": "Следующий трек",
+  "repeat": "Повтор",
+  "like": "Нравится",
+  "queue": "Очередь",
+  "volume": "Громкость",
+  "trackProgress": "Прогресс трека",
+  "coverArtFor": "Обложка для {{title}}"
+}

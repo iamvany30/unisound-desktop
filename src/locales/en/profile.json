@@ -6,11 +6,11 @@
   "profileNotFound": "Profile not found",
   "changeAvatar": "Change Avatar",
   "deleteAvatar": "Delete Avatar",
-  "avatarAlt": "{{username}}'s avatar",
+  "avatarAlt": "Avatar for {{username}}",
   "avatarUpdateError": "Error updating avatar.",
   "deleteAvatarConfirm": "Are you sure you want to delete your avatar?",
   "avatarDeleteError": "Error deleting avatar.",
-  "invalidImageType": "Invalid file type. Please select a JPEG, PNG, or WEBP.",
+  "invalidImageType": "Invalid file type. Please select JPEG, PNG, or WEBP.",
   "imageTooLarge": "File is too large. Maximum size is 5 MB.",
   "noEmail": "No email provided",
   "memberSince": "Member since",
@@ -22,7 +22,7 @@
   "administrator": "Administrator",
   "tracksPlayed": "Tracks Played",
   "listeningHistory": "Listening History",
-  "noHistory": "Your listening history is empty",
+  "noHistory": "Listening history is empty",
   "noHistoryDescription": "Start listening to music and your tracks will appear here.",
   "justNow": "Just now",
   "minutesAgo_one": "{{count}} minute ago",
@@ -32,4 +32,4 @@
   "yesterday": "Yesterday",
   "daysAgo_one": "{{count}} day ago",
   "daysAgo_other": "{{count}} days ago"
-  }
+}

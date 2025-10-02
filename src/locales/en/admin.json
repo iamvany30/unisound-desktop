@@ -1,7 +1,7 @@
 {
   "title": "Admin Panel",
-  "manageUsers": "User Management",
-  "manageTracks": "Track Management",
+  "manageUsers": "Manage Users",
+  "manageTracks": "Manage Tracks",
   "system": "System",
 
   "users": {
@@ -27,8 +27,8 @@
   
   "system": {
     "rescanTitle": "Rescan Library",
-    "rescanDescription": "Scans for new or deleted tracks in the music folder.",
-    "rescanButton": "Start Scan"
+    "rescanDescription": "Scans the music folder for new or deleted tracks.",
+    "rescanButton": "Start Scanning"
   },
 
   "videoModal": {
@@ -45,11 +45,11 @@
   },
 
   "syncModal": {
-    "title": "Video Sync",
+    "title": "Sync Video",
     "description": "Specify the offset in seconds. A positive value (e.g., 1.5) will make the video start later. A negative value (e.g., -0.5) will make it start earlier.",
     "save": "Save",
     "currentOffset": "Current Offset",
     "button": "Sync",
-    "modalTitle": "Adjust Offset"
+    "modalTitle": "Set Offset"
   }
 }

@@ -14,7 +14,11 @@
     "densityCompact": "Компактная",
     "glassAlpha": "Прозрачность панелей",
     "glassBlur": "Интенсивность размытия",
+    "colorTitle": "Акцентный цвет",
     "colorDescription": "Настройте основной акцентный цвет приложения.",
+    "hue": "Тон",
+    "saturation": "Насыщенность",
+    "lightness": "Светлота",
     "resetColorButton": "Сбросить цвет",
     "background": "Фоновое изображение",
     "backgroundDescription": "Установить собственное изображение для фона приложения.",
@@ -26,7 +30,11 @@
     "resetConfirmMessage": "Вы уверены, что хотите сбросить фон к стандартному?",
     "resetSuccessMessage": "Настройки фона сброшены.",
     "fileErrorTitle": "Ошибка файла",
-    "fileErrorMessage": "Пожалуйста, выберите файл изображения (PNG, JPG)."
+    "fileErrorMessage": "Пожалуйста, выберите файл изображения (PNG, JPG).",
+    "preview": {
+      "title": "Динамический заголовок",
+      "button": "Кнопка"
+    }
   },
   "sound": {
     "title": "Звук",
@@ -38,7 +46,9 @@
     "myPresets": "Мои пресеты",
     "savePresetTitle": "Сохранить пресет",
     "deletePresetTitle": "Удаление пресета",
-    "deleteConfirm": "Вы уверены, что хотите удалить пресет \"{{presetName}}\"?"
+    "deleteConfirm": "Вы уверены, что хотите удалить пресет \"{{presetName}}\"?",
+    "selectPreset": "Выберите пресет...",
+    "noResults": "Совпадений не найдено"
   },
   "data": {
     "title": "Данные"
@@ -84,6 +94,7 @@
     "successTitle": "Сброс завершен"
   },
   "language": {
-    "title": "Язык интерфейса"
+    "title": "Язык интерфейса",
+    "select": "Выберите язык..."
   }
 }
