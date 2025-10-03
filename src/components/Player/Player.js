@@ -58,8 +58,6 @@ TrackInfo.displayName = 'TrackInfo';
 const Player = () => {
     const { currentTrack, isCurrentTrackLiked, toggleLike, toggleNowPlaying } = usePlayer();
     const { t } = useTranslation('player');
-    
-    
     const { artworkSrc } = useArtwork(currentTrack);
 
     if (!currentTrack) {
@@ -69,14 +67,13 @@ const Player = () => {
     return (
         <div className="player-bar">
             <PlayerBackground artworkSrc={artworkSrc} />
-            
             <ProgressBar />
-
             <div className="player-content-grid">
                 <div className="player-left-controls">
                     <PlayerArtwork track={currentTrack} toggleNowPlaying={toggleNowPlaying} />
                     <TrackInfo track={currentTrack} />
-                    <button className={`control-btn like-btn ${isCurrentTrackLiked ? 'active' : ''}`} onClick={toggleLike} aria-label={t('like')}>
+                    
+                    <button className={`control-btn like-btn control-btn-optional ${isCurrentTrackLiked ? 'active' : ''}`} onClick={toggleLike} aria-label={t('like')}>
                         <Heart size={18} />
                     </button>
                 </div>
@@ -86,7 +83,7 @@ const Player = () => {
                 </div>
 
                 <div className='player-right-controls'>
-                    <button className="control-btn queue-btn" aria-label={t('queue')}>
+                    <button className="control-btn queue-btn control-btn-optional" aria-label={t('queue')}>
                         <ListMusic size={20} />
                     </button>
                     <VolumeControl />

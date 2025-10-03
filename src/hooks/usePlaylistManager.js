@@ -1,5 +1,4 @@
 import { useState, useCallback, useMemo } from 'react';
-import api from '../services/api';
 
 export const usePlaylistManager = (initialState = {}) => {
     const [playlist, setPlaylist] = useState(initialState.playlist || []);

@@ -1,0 +1,49 @@
+{
+  "title": "Tableau de bord de l'administrateur",
+  "manageUsers": "Gestion des utilisateurs",
+  "manageTracks": "Gestion des pistes",
+  "system": {
+    "rescanTitle": "Réanalyser la bibliothèque",
+    "rescanDescription": "Recherche les pistes nouvelles ou supprimées dans le dossier de musique.",
+    "rescanButton": "Démarrer l'analyse"
+  },
+  "users": {
+    "id": "ID",
+    "username": "Nom d'utilisateur",
+    "email": "Email",
+    "status": "Statut",
+    "role": "Rôle",
+    "active": "Actif",
+    "admin": "Admin",
+    "edit": "Modifier",
+    "delete": "Supprimer"
+  },
+  "tracks": {
+    "searchPlaceholder": "Rechercher des pistes par titre ou artiste...",
+    "track": "Piste",
+    "artist": "Artiste",
+    "videoStatus": "Statut de la vidéo",
+    "actions": "Actions",
+    "manage": "Gérer"
+  },
+  "videoModal": {
+    "title": "Gestion de la vidéo",
+    "titleFor": "Gestion de la vidéo pour \"{{title}}\"",
+    "currentStatus": "Statut actuel",
+    "noVideo": "Aucune vidéo n'a été téléchargée.",
+    "shortVideo": "Courte vidéo (Short)",
+    "fullVideo": "Vidéo complète (Full)",
+    "upload": "Télécharger",
+    "selectFile": "Veuillez sélectionner un fichier à télécharger.",
+    "uploadError": "Une erreur s'est produite lors du téléchargement.",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer"
+  },
+  "syncModal": {
+    "title": "Synchronisation vidéo",
+    "description": "Spécifiez le décalage en secondes. Une valeur positive (par exemple, 1.5) fera démarrer la vidéo plus tard. Une valeur négative (par exemple, -0.5) - plus tôt.",
+    "save": "Enregistrer",
+    "currentOffset": "Décalage actuel",
+    "button": "Synchroniser",
+    "modalTitle": "Réglage du décalage"
+  }
+}

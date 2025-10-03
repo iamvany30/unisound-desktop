@@ -9,10 +9,10 @@
     "profile": "Profile",
     "settings": "Settings",
     "adminPanel": "Admin Panel",
-    "logout": "Log Out",
-    "login": "Log In",
-    "searchPlaceholder": "Search for tracks, artists, albums...",
-    "windowControls": "Window Controls",
+    "logout": "Logout",
+    "login": "Login",
+    "searchPlaceholder": "Search tracks, artists, albums...",
+    "windowControls": "Window controls",
     "minimize": "Minimize",
     "maximize": "Maximize",
     "restore": "Restore",
@@ -20,20 +20,20 @@
     "goHome": "Go to Home",
     "goBack": "Back",
     "goForward": "Forward",
-    "refreshPage": "Refresh Page"
+    "refreshPage": "Refresh page"
   },
   "likedSongs": {
-    "trackCount_one": "{{count}} track",
-    "trackCount_other": "{{count}} tracks",
-    "empty": "You haven't liked any songs yet.",
-    "error": "Failed to load liked songs.",
+    "trackCount": "{{count}} tracks",
+    "trackCount_plural": "{{count}} track",
+    "trackCount_plural_5": "{{count}} tracks",
+    "empty": "You haven't added any tracks to 'Liked Songs' yet.",
+    "error": "Failed to load the list of favorite tracks.",
     "retry": "Retry"
   },
   "userStatus": {
     "admin": "Administrator",
-    "user": "User"
+    "user": "user"
   },
-  "languageName": "English",
   "cancel": "Cancel",
   "confirm": "Confirm",
   "confirmation": "Confirmation",
@@ -42,5 +42,6 @@
   "delete": "Delete",
   "reset": "Reset",
   "loading": "Loading...",
-  "goHome": "Go to Home"
+  "goHome": "Go to Home",
+  "languageName": "English"
 }

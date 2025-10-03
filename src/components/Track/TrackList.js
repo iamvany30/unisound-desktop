@@ -1,6 +1,5 @@
 
 import React from 'react';
-import api from '../../services/api';
 
 const e = React.createElement;
 

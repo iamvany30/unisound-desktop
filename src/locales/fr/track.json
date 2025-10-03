@@ -1,0 +1,9 @@
+{
+  "loading": "Chargement des informations sur le morceau...",
+  "error": "Impossible de charger les informations sur le morceau.",
+  "plays": "écoutes",
+  "likes": "likes",
+  "lyrics": "Paroles",
+  "lyricsLoading": "Chargement des paroles...",
+  "lyricsNotFound": "Paroles introuvables pour ce morceau."
+}

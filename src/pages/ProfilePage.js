@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useRef, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
@@ -8,16 +8,10 @@ import {
     User, Music, Calendar, UploadCloud, Trash2, Shield, Gem,
     LoaderCircle, Clock, Mail, Crown, Star, Headphones, Play
 } from 'lucide-react';
-
 import './ProfilePage.css';
-
-
-
-
 
 const ProfileDetailItem = ({ icon: Icon, label, value, type }) => {
     if (!value) return null;
-
     const getBadgeClass = () => {
         switch (type) {
             case 'admin': return 'status-badge admin';
@@ -26,7 +20,6 @@ const ProfileDetailItem = ({ icon: Icon, label, value, type }) => {
             default: return '';
         }
     };
-
     return (
         <div className="profile-detail-item">
             <Icon size={18} className="detail-icon" />
@@ -43,7 +36,7 @@ const ProfileDetailItem = ({ icon: Icon, label, value, type }) => {
 
 const HistoryArtwork = React.memo(({ track }) => {
     const { artworkSrc, isLoading, errorStatus } = useArtwork(track.uuid);
-    const [imageError, setImageError] = useState(false);
+    const [imageError, setImageError] = React.useState(false);
     if (isLoading) return <div className="artwork-fallback"><LoaderCircle size={24} className="animate-spin" /></div>;
     if (errorStatus || !artworkSrc || imageError) return <div className="artwork-fallback"><Music size={24} /></div>;
     return <img src={artworkSrc} alt={`${track.title}`} onError={() => setImageError(true)} loading="lazy" />;
@@ -84,10 +77,6 @@ const StatusMessage = ({ status, message, onRetry, t }) => (
     </div>
 );
 
-
-
-
-
 const HistoryItemSkeleton = () => (
     <div className="history-item-skeleton">
         <div className="skeleton-block"></div>
@@ -117,13 +106,9 @@ const ProfileSkeleton = () => (
     </div>
 );
 
-
-
-
-
 const ProfileSidebar = ({ profile, historyCount, onProfileUpdate, t, i18n }) => {
     const fileInputRef = useRef(null);
-    const [avatarAction, setAvatarAction] = useState({ state: 'idle', error: null }); 
+    const [avatarAction, setAvatarAction] = React.useState({ state: 'idle', error: null }); 
 
     const formatDate = useCallback((dateString) => new Date(dateString).toLocaleDateString(i18n.language, { year: 'numeric', month: 'long', day: 'numeric' }), [i18n.language]);
 
@@ -148,7 +133,7 @@ const ProfileSidebar = ({ profile, historyCount, onProfileUpdate, t, i18n }) => 
         } catch (err) {
             setAvatarAction({ state: 'idle', error: err.message || t('avatarUpdateError') });
         } finally {
-            if (avatarAction.state === 'uploading') setAvatarAction({ state: 'idle', error: null });
+            setAvatarAction({ state: 'idle', error: null });
             if (fileInputRef.current) fileInputRef.current.value = '';
         }
     };
@@ -162,7 +147,7 @@ const ProfileSidebar = ({ profile, historyCount, onProfileUpdate, t, i18n }) => 
         } catch (err) {
             setAvatarAction({ state: 'idle', error: err.message || t('avatarDeleteError') });
         } finally {
-            if (avatarAction.state === 'deleting') setAvatarAction({ state: 'idle', error: null });
+            setAvatarAction({ state: 'idle', error: null });
         }
     };
 
@@ -215,44 +200,29 @@ const ProfileContent = ({ history, t }) => (
     </main>
 );
 
-
-
-
-
 const ProfilePage = () => {
     const { t, i18n } = useTranslation('profile');
-    const [pageState, setPageState] = useState({ status: 'loading', profile: null, history: [], error: null });
-    
-    const fetchData = useCallback(async () => {
-        setPageState(prev => ({ ...prev, status: 'loading' }));
-        try {
-            const [profileData, historyData] = await Promise.all([api.user.getProfile(), api.user.getHistory()]);
-            setPageState({ status: 'success', profile: profileData, history: historyData, error: null });
-        } catch (err) {
-            setPageState({ status: 'error', profile: null, history: [], error: err.message || t('loadFailed') });
-        }
-    }, [t]);
+    const { user, history, loading, updateUser } = useAuth();
 
-    useEffect(() => { fetchData(); }, [fetchData]);
 
-    const handleProfileUpdate = (newProfileData) => {
-        setPageState(prev => ({ ...prev, profile: { ...prev.profile, ...newProfileData } }));
-    };
+    if (loading) {
+        return <ProfileSkeleton />;
+    }
 
-    if (pageState.status === 'loading') return <ProfileSkeleton />;
-    if (pageState.status === 'error') return <StatusMessage status="error" message={pageState.error} onRetry={fetchData} t={t} />;
-    if (!pageState.profile) return <StatusMessage status="error" message={t('profileNotFound')} t={t} />;
+    if (!user) {
+        return <StatusMessage status="error" message={t('profileNotFound')} t={t} />;
+    }
 
     return (
         <div className="profile-page-container">
              <ProfileSidebar
-                profile={pageState.profile}
-                historyCount={pageState.history.length}
-                onProfileUpdate={handleProfileUpdate}
+                profile={user}
+                historyCount={history.length}
+                onProfileUpdate={updateUser}
                 t={t}
                 i18n={i18n}
              />
-             <ProfileContent history={pageState.history} t={t} />
+             <ProfileContent history={history} t={t} />
         </div>
     );
 };

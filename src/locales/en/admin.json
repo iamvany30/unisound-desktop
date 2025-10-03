@@ -2,8 +2,11 @@
   "title": "Admin Panel",
   "manageUsers": "Manage Users",
   "manageTracks": "Manage Tracks",
-  "system": "System",
-
+  "system": {
+    "rescanTitle": "Rescan Library",
+    "rescanDescription": "Looks for new or deleted tracks in the music folder.",
+    "rescanButton": "Start Scanning"
+  },
   "users": {
     "id": "ID",
     "username": "Username",
@@ -15,22 +18,14 @@
     "edit": "Edit",
     "delete": "Delete"
   },
-  
   "tracks": {
-    "searchPlaceholder": "Search tracks by title or artist...",
+    "searchPlaceholder": "Search for tracks by title or artist...",
     "track": "Track",
     "artist": "Artist",
     "videoStatus": "Video Status",
     "actions": "Actions",
     "manage": "Manage"
   },
-  
-  "system": {
-    "rescanTitle": "Rescan Library",
-    "rescanDescription": "Scans the music folder for new or deleted tracks.",
-    "rescanButton": "Start Scanning"
-  },
-
   "videoModal": {
     "title": "Manage Video",
     "titleFor": "Manage video for \"{{title}}\"",
@@ -43,13 +38,12 @@
     "uploadError": "An error occurred during upload.",
     "deleteConfirm": "Are you sure you want to delete"
   },
-
   "syncModal": {
-    "title": "Sync Video",
-    "description": "Specify the offset in seconds. A positive value (e.g., 1.5) will make the video start later. A negative value (e.g., -0.5) will make it start earlier.",
+    "title": "Video Synchronization",
+    "description": "Specify the offset in seconds. A positive value (e.g. 1.5) will cause the video to start later. A negative value (e.g. -0.5) - earlier.",
     "save": "Save",
     "currentOffset": "Current Offset",
-    "button": "Sync",
-    "modalTitle": "Set Offset"
+    "button": "Synchronize",
+    "modalTitle": "Offset Configuration"
   }
 }

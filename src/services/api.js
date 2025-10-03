@@ -11,6 +11,9 @@ class ApiError extends Error {
     }
 }
 
+export const triggerBackgroundUpdate = () => {
+    window.dispatchEvent(new CustomEvent('background-settings-changed'));
+};
 
 const fetchApi = async (url, options = {}) => {
     const token = localStorage.getItem('unisound_token');

@@ -1,34 +1,34 @@
 {
   "waveHero": {
-    "myWave": "我的声浪",
+    "myWave": "我的浪潮",
     "play": "播放"
   },
   "recommendations": "为你推荐",
-  "loadError": "加载主页数据失败。",
+  "loadError": "无法加载首页数据。",
   "wave": {
-    "modalTitle": "我的声浪设置",
-    "settingsAriaLabel": "配置我的声浪",
-    "description": "调整曲目推荐算法，以获得最精准的推荐。",
+    "modalTitle": "我的浪潮设置",
+    "settingsAriaLabel": "配置我的浪潮",
+    "description": "调整推荐算法，获取最精准的音乐推荐。",
     "exploration": {
-      "title": "探索性",
-      "description": "决定“声浪”向您推荐新音乐的频率。"
+      "title": "探索",
+      "description": "决定浪潮推荐新音乐的频率。"
     },
     "favorites": {
-      "title": "收藏偏好",
-      "description": "影响您喜欢的曲目出现的频率。"
+      "title": "收藏的歌曲",
+      "description": "影响你点赞歌曲的出现频率。"
     },
     "popularity": {
-      "title": "热门度",
-      "description": "在知名热门歌曲与小众音乐之间取得平衡。"
+      "title": "流行度",
+      "description": "平衡热门金曲和不那么流行的音乐。"
     },
     "era": {
-      "title": "年代",
-      "description": "偏好推荐与您喜欢的曲目相同年代的音乐。"
+      "title": "时代",
+      "description": "优先推荐与你收藏歌曲相同时代的音乐。"
     },
     "saveSuccess": "已保存",
-    "settingsUpdated": "声浪设置已成功更新。",
-    "saveError": "保存失败",
+    "settingsUpdated": "浪潮设置已成功更新。",
+    "saveError": "保存错误",
     "error": "错误",
-    "loadError": "加载声浪设置失败，请稍后再试。"
+    "loadError": "无法加载浪潮设置。请稍后再试。"
   }
 }

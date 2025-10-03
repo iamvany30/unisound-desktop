@@ -6,9 +6,10 @@
 @import "./assets/background.css"; 
 @import "./assets/theme.css"; 
 @import "./assets/styles.css"; 
+@import "./assets/CompactVersion.css"; 
 @import "./assets/TrackComponents.css"; 
 @import "./components/Common/AppLoader.css";
 @import "./assets/glass_sys.css";
+@import "./pages/Settings/Settings.css";
 
-.app-grid-layout{display:grid;grid-template-columns:var(--sidebar-width) 1fr;grid-template-rows:var(--header-height) 1fr var(--player-height);grid-template-areas:"sidebar header" "sidebar main" "sidebar player";height:100%;width:100%;box-sizing:border-box;gap:var(--spacing-md);padding:var(--spacing-md)}.main-content{grid-area:main;overflow:hidden;position:relative}.content-wrapper{width:100%;height:100%;padding:var(--spacing-lg);overflow-y:auto}.sidebar{grid-area:sidebar}.header{grid-area:header}.player-bar-container{grid-area:player;position:relative}
-
+.app-grid-layout{display:grid;grid-template-columns:var(--sidebar-width) 1fr;grid-template-rows:var(--header-height) 1fr var(--player-height);grid-template-areas:"sidebar header" "sidebar main" "sidebar player";height:100%;width:100%;box-sizing:border-box;gap:var(--spacing-md);padding:var(--spacing-md);position:relative;z-index:1}.main-content{grid-area:main;overflow:hidden;position:relative}.content-wrapper{width:100%;height:100%;padding:var(--spacing-lg);overflow-y:auto}.sidebar{grid-area:sidebar}.header{grid-area:header}.player-bar-container{grid-area:player;position:relative}

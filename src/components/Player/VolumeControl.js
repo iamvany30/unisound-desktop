@@ -14,7 +14,7 @@ const VolumeControl = () => {
             <button className="control-btn" onClick={toggleMute} aria-label={t('volume')}>
                 <VolumeIcon size={20} />
             </button>
-            <input type="range" className="volume-slider" min={0} max={1} step={0.01} value={volume} onChange={(e) => setVolume(parseFloat(e.target.value))} aria-label={t('volume')} />
+            <input type="range" className="volume-slider responsive-hide" min={0} max={1} step={0.01} value={volume} onChange={(e) => setVolume(parseFloat(e.target.value))} aria-label={t('volume')} />
         </div>
     );
 };

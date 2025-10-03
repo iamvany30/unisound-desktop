@@ -1,0 +1,47 @@
+{
+  "app": {
+    "appName": "UniSound"
+  },
+  "header": {
+    "home": "Домой",
+    "library": "Музлотека",
+    "likedSongs": "Заценилки",
+    "profile": "Профильчик",
+    "settings": "Настроечки",
+    "adminPanel": "Админ-щи",
+    "logout": "Ливнуть",
+    "login": "Залогиниться",
+    "searchPlaceholder": "Искать музон, артистов, альбомы...",
+    "windowControls": "Кнопки окна",
+    "minimize": "Ужать",
+    "maximize": "Развернуть во всю",
+    "restore": "Восстановить как было",
+    "close": "Закрыть нафиг",
+    "goHome": "На главную смотаться",
+    "goBack": "Назад",
+    "goForward": "Вперед",
+    "refreshPage": "Перезагрузить страницу"
+  },
+  "likedSongs": {
+    "trackCount": "{{count}} треков",
+    "trackCount_plural": "{{count}} трека",
+    "trackCount_plural_5": "{{count}} треков",
+    "empty": "Ты еще ни одного трека в 'Заценилки' не добавил.",
+    "error": "Не получилось загрузить список заценилок.",
+    "retry": "Еще разок"
+  },
+  "userStatus": {
+    "admin": "Админ",
+    "user": "юзер"
+  },
+  "cancel": "Отмена",
+  "confirm": "Точняк?",
+  "confirmation": "Подтверждаю!",
+  "ok": "ОК",
+  "save": "Сохранить",
+  "delete": "Вынести",
+  "reset": "Сбросить",
+  "loading": "Грузим...",
+  "goHome": "На главную смотаться",
+  "languageName": "Наш родной богатырский"
+}

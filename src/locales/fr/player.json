@@ -1,0 +1,15 @@
+{
+  "collapsePlayer": "Réduire le lecteur",
+  "toggleLyrics": "Afficher/masquer les paroles",
+  "shuffle": "Lecture aléatoire",
+  "previousTrack": "Piste précédente",
+  "play": "Lecture",
+  "pause": "Pause",
+  "nextTrack": "Piste suivante",
+  "repeat": "Répéter",
+  "like": "J'aime",
+  "queue": "File d'attente",
+  "volume": "Volume",
+  "trackProgress": "Progression de la piste",
+  "coverArtFor": "Pochette pour {{title}}"
+}

@@ -1,15 +1,15 @@
 {
-  "collapsePlayer": "收起播放器",
+  "collapsePlayer": "折叠播放器",
   "toggleLyrics": "显示/隐藏歌词",
   "shuffle": "随机播放",
-  "previousTrack": "上一首",
+  "previousTrack": "上一曲",
   "play": "播放",
   "pause": "暂停",
-  "nextTrack": "下一首",
-  "repeat": "循环播放",
+  "nextTrack": "下一曲",
+  "repeat": "重复",
   "like": "喜欢",
-  "queue": "播放队列",
+  "queue": "队列",
   "volume": "音量",
-  "trackProgress": "播放进度",
+  "trackProgress": "歌曲进度",
   "coverArtFor": "{{title}} 的封面"
 }

@@ -1,0 +1,20 @@
+{
+  "about": "À propos de l'artiste",
+  "readMore": "Lire la suite",
+  "showLess": "Réduire",
+  "popularity": "Popularité",
+  "tracksInLibrary": "Titres dans la bibliothèque",
+  "externalLinks": "Liens externes",
+  "play": "Écouter",
+  "follow": "Suivre",
+  "following": "Abonné(e)",
+  "popular": "Populaire",
+  "albums": "Albums",
+  "singles": "Singles et EP",
+  "errorNotFound": "Aucun titre de cet artiste n'a été trouvé dans votre bibliothèque.",
+  "error": "Impossible de charger les informations sur l'artiste.",
+  "retry": "Réessayer",
+  "playArtist": "Écouter {{artist}}",
+  "playTrack": "Écouter le titre {{track}}",
+  "playAlbum": "Écouter l'album {{album}}"
+}

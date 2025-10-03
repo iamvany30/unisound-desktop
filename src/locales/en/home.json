@@ -3,31 +3,31 @@
     "myWave": "My Wave",
     "play": "Play"
   },
-  "recommendations": "Made for you",
-  "loadError": "Failed to load data for the home page.",
+  "recommendations": "Recommended for you",
+  "loadError": "Failed to load data for the main page.",
   "wave": {
-    "modalTitle": "My Wave Settings",
-    "settingsAriaLabel": "Configure My Wave",
-    "description": "Adjust the track selection algorithm to get the most accurate recommendations.",
+    "modalTitle": "My Wave settings",
+    "settingsAriaLabel": "Customize My Wave",
+    "description": "Adjust the track selection algorithm to receive the most accurate recommendations.",
     "exploration": {
-      "title": "Discovery",
-      "description": "Determines how often the Wave will suggest new music to you."
+      "title": "Discoveries",
+      "description": "Determines how often Wave will offer you new music."
     },
     "favorites": {
-      "title": "Favorite Tracks",
-      "description": "Influences the frequency of tracks you've liked appearing."
+      "title": "Favorite tracks",
+      "description": "Affects the frequency of tracks you've liked."
     },
     "popularity": {
       "title": "Popularity",
-      "description": "Balances between well-known hits and less popular music."
+      "description": "Balance between well-known hits and less popular music."
     },
     "era": {
       "title": "Era",
       "description": "Prefer music from the same era as your favorite tracks."
     },
     "saveSuccess": "Saved",
-    "settingsUpdated": "Wave settings updated successfully.",
-    "saveError": "Save Error",
+    "settingsUpdated": "Wave settings successfully updated.",
+    "saveError": "Save error",
     "error": "Error",
     "loadError": "Failed to load Wave settings. Please try again later."
   }

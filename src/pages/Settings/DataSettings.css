@@ -1,0 +1,12 @@
+.danger-zone {
+    border-color: var(--color-border-danger);
+    background-color: hsla(var(--accent-h, 0), 84%, 60%, 0.05);
+}
+
+.danger-zone .danger-zone__title {
+    color: var(--color-error);
+}
+
+.danger-zone .settingsGroupDescription {
+    color: var(--color-text-secondary);
+}

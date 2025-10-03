@@ -1,0 +1,34 @@
+{
+  "waveHero": {
+    "myWave": "Ma vague",
+    "play": "Écouter"
+  },
+  "recommendations": "Recommandations personnalisées",
+  "loadError": "Impossible de charger les données de la page d'accueil.",
+  "wave": {
+    "modalTitle": "Paramètres de Ma vague",
+    "settingsAriaLabel": "Personnaliser Ma vague",
+    "description": "Ajustez l'algorithme de sélection de pistes pour obtenir les recommandations les plus précises.",
+    "exploration": {
+      "title": "Découvertes",
+      "description": "Détermine la fréquence à laquelle Vague vous proposera de nouvelles musiques."
+    },
+    "favorites": {
+      "title": "Titres favoris",
+      "description": "Influe sur la fréquence d'apparition des titres que vous avez aimés."
+    },
+    "popularity": {
+      "title": "Popularité",
+      "description": "Équilibre entre les tubes connus et la musique moins populaire."
+    },
+    "era": {
+      "title": "Époque",
+      "description": "Préférer la musique de la même époque que vos titres préférés."
+    },
+    "saveSuccess": "Enregistré",
+    "settingsUpdated": "Les paramètres de Vague ont été mis à jour avec succès.",
+    "saveError": "Erreur d'enregistrement",
+    "error": "Erreur",
+    "loadError": "Impossible de charger les paramètres de Vague. Veuillez réessayer plus tard."
+  }
+}

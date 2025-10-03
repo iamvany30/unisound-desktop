@@ -1,1 +1,128 @@
-.status-bar{display:flex;align-items:center;gap:var(--spacing-sm);padding:4px 10px;border-radius:var(--border-radius-md);font-size:var(--font-size-xs);font-weight:var(--font-weight-medium);transition:all var(--transition-fast);border:1px solid transparent}.status-icon{flex-shrink:0}.status-bar.status-online{background-color:hsla(var(--accent-h),var(--accent-s),var(--accent-l),.1);border-color:hsla(var(--accent-h),var(--accent-s),var(--accent-l),.3);color:var(--color-accent-primary)}.status-bar.status-degraded{background-color:rgba(212,162,14,.15);border-color:rgba(212,162,14,.4);color:#d4a20e}.status-bar.status-offline{background-color:hsla(3,95%,63%,.1);border-color:hsla(3,95%,63%,.4);color:var(--color-error);animation:2s infinite pulse-offline}@keyframes pulse-offline{0%,100%{opacity:1}50%{opacity:.7}}@media (max-width:768px){.status-text{display:none}.status-bar{width:32px;height:32px;justify-content:center;padding:0;border-radius:50%}}
+.status-bar-container {
+    position: relative;
+    user-select: none;
+}
+
+.status-bar-trigger {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: 6px 12px;
+    border-radius: var(--border-radius-md);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-fast);
+    border: 1px solid transparent;
+    cursor: pointer;
+    background-color: var(--color-background-interactive);
+    color: var(--color-text-secondary);
+}
+.status-bar-trigger:hover {
+    background-color: var(--color-background-interactive-hover);
+    color: var(--color-text-primary);
+}
+
+.status-icon {
+    flex-shrink: 0;
+}
+
+.status-bar--online { color: var(--color-success); }
+.status-bar--degraded { color: var(--color-warning); }
+.status-bar--offline { color: var(--color-error); }
+
+.notification-bell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    color: var(--color-text-tertiary);
+    transition: color var(--transition-fast);
+}
+.status-bar-trigger:hover .notification-bell {
+    color: var(--color-text-secondary);
+}
+.notification-bell.active {
+    color: var(--color-accent-primary);
+    animation: bell-ring 0.5s ease-in-out;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: var(--border-radius-full);
+    background-color: var(--color-error);
+    color: var(--color-text-on-accent);
+    font-size: 10px;
+    font-weight: var(--font-weight-bold);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid var(--color-background);
+}
+
+.notification-popover {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 380px;
+    max-height: 400px;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-glass-background);
+    border: 1px solid var(--player-border);
+    backdrop-filter: var(--backdrop-filter-glass-strong);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-xl);
+    z-index: var(--z-index-popover);
+    animation: scaleIn 0.2s ease-out;
+}
+.notification-popover__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-bottom: 1px solid var(--color-border);
+}
+.notification-popover__title {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+}
+.notification-popover__content {
+    overflow-y: auto;
+    padding: var(--spacing-sm);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+.notification-popover__empty {
+    padding: var(--spacing-xl);
+    text-align: center;
+    color: var(--color-text-muted);
+}
+.notification-popover-item {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--border-radius-sm);
+    background-color: var(--color-background-interactive-hover);
+}
+.notification-progress-bar {
+    height: 4px;
+    background-color: var(--color-border);
+    border-radius: var(--border-radius-full);
+    overflow: hidden;
+    margin-top: var(--spacing-sm);
+}
+.notification-progress-bar__fill {
+    height: 100%;
+    background-color: var(--color-accent-primary);
+    transition: width 0.3s ease;
+}
+
+@keyframes bell-ring {
+    0%, 100% { transform: rotate(0); }
+    10%, 30%, 50%, 70%, 90% { transform: rotate(-10deg); }
+    20%, 40%, 60%, 80% { transform: rotate(10deg); }
+}

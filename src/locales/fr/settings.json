@@ -1,0 +1,100 @@
+{
+  "title": "Paramètres",
+  "common": {
+    "title": "Général"
+  },
+  "appearance": {
+    "title": "Apparence",
+    "theme": "Thème",
+    "themeLight": "Clair",
+    "themeDark": "Sombre",
+    "themeSystem": "Système",
+    "density": "Densité de l'interface",
+    "densityComfortable": "Standard",
+    "densityCompact": "Compacte",
+    "glassAlpha": "Transparence des panneaux",
+    "glassBlur": "Intensité du flou",
+    "colorTitle": "Couleur d'accentuation",
+    "colorDescription": "Personnalisez la couleur d'accentuation principale de l'application.",
+    "hue": "Teinte",
+    "saturation": "Saturation",
+    "lightness": "Luminosité",
+    "resetColorButton": "Réinitialiser la couleur",
+    "background": "Image de fond",
+    "backgroundDescription": "Définir votre propre image pour l'arrière-plan de l'application.",
+    "uploadButton": "Télécharger .png ou .jpg",
+    "blur": "Niveau de flou de l'arrière-plan",
+    "blurDescription": "Ajustez l'intensité de l'effet de flou.",
+    "resetButton": "Réinitialiser par défaut",
+    "resetConfirmTitle": "Réinitialiser l'arrière-plan",
+    "resetConfirmMessage": "Êtes-vous sûr de vouloir rétablir l'arrière-plan par défaut ?",
+    "resetSuccessMessage": "Les paramètres d'arrière-plan ont été réinitialisés.",
+    "fileErrorTitle": "Erreur de fichier",
+    "fileErrorMessage": "Veuillez sélectionner un fichier image (PNG, JPG).",
+    "preview": {
+      "title": "Titre dynamique",
+      "button": "Bouton"
+    }
+  },
+  "sound": {
+    "title": "Son",
+    "description": "Personnalisez le son selon vos préférences",
+    "preset": "Préréglage",
+    "default": "Par défaut",
+    "manual": "Manuel",
+    "builtIn": "Intégré",
+    "myPresets": "Mes préréglages",
+    "savePresetTitle": "Enregistrer le préréglage",
+    "deletePresetTitle": "Suppression du préréglage",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer le préréglage \"{{presetName}}\" ?",
+    "selectPreset": "Sélectionner un préréglage...",
+    "noResults": "Aucun résultat trouvé"
+  },
+  "data": {
+    "title": "Données"
+  },
+  "video": {
+    "title": "Pré-chargement vidéo",
+    "description": "Charger automatiquement la vidéo suivante en arrière-plan pour un démarrage instantané."
+  },
+  "quality": {
+    "title": "Qualité audio",
+    "description": "Une qualité élevée nécessite plus de trafic et peut prendre plus de temps à charger.",
+    "low": "Faible",
+    "standard": "Standard",
+    "high": "Élevée",
+    "changed": "La qualité audio sera appliquée à la prochaine piste."
+  },
+  "notifications": {
+    "groupTitle": "Notifications",
+    "title": "Notifications Push",
+    "enable": "Activer",
+    "subscribing": "Abonnement...",
+    "enabled": "Activées",
+    "blocked": "Bloquées",
+    "success": "Notifications activées avec succès !",
+    "successTitle": "Excellent !",
+    "error": "Impossible d'activer les notifications.",
+    "errorTitle": "Erreur",
+    "modal": {
+      "title": "Restez informé des nouveautés",
+      "description": "Nous souhaitons vous envoyer des notifications sur les événements importants :",
+      "feature1": "Sorties de vos artistes préférés",
+      "feature2": "Nouvelles recommandations personnalisées",
+      "feature3": "Pas de publicité ni de spam.",
+      "info": "Vous pouvez modifier ces paramètres à tout moment."
+    }
+  },
+  "fullReset": {
+    "title": "Réinitialisation complète",
+    "description": "Supprimera toutes les données locales de l'application et se déconnectera du compte.",
+    "button": "Effectuer la réinitialisation",
+    "confirm": "Êtes-vous sûr ? Toutes les données locales seront effacées.",
+    "success": "Réinitialisation effectuée. L'application va redémarrer.",
+    "successTitle": "Réinitialisation terminée"
+  },
+  "language": {
+    "title": "Langue de l'interface",
+    "select": "Sélectionner une langue..."
+  }
+}

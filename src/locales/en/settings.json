@@ -1,7 +1,7 @@
 {
   "title": "Settings",
   "common": {
-    "title": "General"
+    "title": "Common"
   },
   "appearance": {
     "title": "Appearance",
@@ -9,30 +9,30 @@
     "themeLight": "Light",
     "themeDark": "Dark",
     "themeSystem": "System",
-    "density": "Interface Density",
-    "densityComfortable": "Comfortable",
+    "density": "Interface density",
+    "densityComfortable": "Standard",
     "densityCompact": "Compact",
-    "glassAlpha": "Panel Transparency",
-    "glassBlur": "Blur Intensity",
-    "colorTitle": "Accent Color",
+    "glassAlpha": "Panel transparency",
+    "glassBlur": "Blur intensity",
+    "colorTitle": "Accent color",
     "colorDescription": "Customize the main accent color of the application.",
     "hue": "Hue",
     "saturation": "Saturation",
     "lightness": "Lightness",
-    "resetColorButton": "Reset Color",
-    "background": "Background Image",
-    "backgroundDescription": "Set a custom image for the application background.",
+    "resetColorButton": "Reset color",
+    "background": "Background image",
+    "backgroundDescription": "Set your own image for the application background.",
     "uploadButton": "Upload .png or .jpg",
-    "blur": "Background Blur Level",
+    "blur": "Background blur level",
     "blurDescription": "Adjust the intensity of the blur effect.",
-    "resetButton": "Reset to Default",
-    "resetConfirmTitle": "Reset Background",
-    "resetConfirmMessage": "Are you sure you want to reset the background to the default?",
-    "resetSuccessMessage": "Background settings have been reset.",
-    "fileErrorTitle": "File Error",
+    "resetButton": "Reset to default",
+    "resetConfirmTitle": "Reset background",
+    "resetConfirmMessage": "Are you sure you want to reset the background to default?",
+    "resetSuccessMessage": "Background settings reset.",
+    "fileErrorTitle": "File error",
     "fileErrorMessage": "Please select an image file (PNG, JPG).",
     "preview": {
-      "title": "Dynamic Header",
+      "title": "Dynamic title",
       "button": "Button"
     }
   },
@@ -41,25 +41,25 @@
     "description": "Customize the sound to your preferences",
     "preset": "Preset",
     "default": "Default",
-    "manual": "Manual",
+    "manual": "Manual configuration",
     "builtIn": "Built-in",
-    "myPresets": "My Presets",
-    "savePresetTitle": "Save Preset",
-    "deletePresetTitle": "Delete Preset",
+    "myPresets": "My presets",
+    "savePresetTitle": "Save preset",
+    "deletePresetTitle": "Delete preset",
     "deleteConfirm": "Are you sure you want to delete the preset \"{{presetName}}\"?",
-    "selectPreset": "Select a preset...",
-    "noResults": "No results found"
+    "selectPreset": "Select preset...",
+    "noResults": "No matches found"
   },
   "data": {
     "title": "Data"
   },
   "video": {
-    "title": "Video Preloading",
-    "description": "Automatically load the next video in the background for instant playback."
+    "title": "Video preload",
+    "description": "Automatically load the next video in the background for instant start."
   },
   "quality": {
-    "title": "Audio Quality",
-    "description": "High quality requires more data and may take longer to load.",
+    "title": "Audio quality",
+    "description": "High quality requires more traffic and may take longer to load.",
     "low": "Low",
     "standard": "Standard",
     "high": "High",
@@ -67,18 +67,18 @@
   },
   "notifications": {
     "groupTitle": "Notifications",
-    "title": "Push Notifications",
+    "title": "Push notifications",
     "enable": "Enable",
     "subscribing": "Subscribing...",
     "enabled": "Enabled",
     "blocked": "Blocked",
-    "success": "Notifications enabled successfully!",
-    "successTitle": "Success!",
+    "success": "Notifications successfully enabled!",
+    "successTitle": "Excellent!",
     "error": "Failed to enable notifications.",
     "errorTitle": "Error",
     "modal": {
-      "title": "Stay up to date",
-      "description": "We'd like to send you notifications for important events:",
+      "title": "Stay up to date with new products",
+      "description": "We want to send you notifications about important events:",
       "feature1": "Releases from your favorite artists",
       "feature2": "New personal recommendations",
       "feature3": "No ads or spam.",
@@ -86,15 +86,15 @@
     }
   },
   "fullReset": {
-    "title": "Full Reset",
-    "description": "Deletes all local application data and logs you out.",
-    "button": "Perform Reset",
+    "title": "Full reset",
+    "description": "Deletes all local application data and logs out of the account.",
+    "button": "Perform reset",
     "confirm": "Are you sure? All local data will be erased.",
-    "success": "Reset complete. The application will now restart.",
-    "successTitle": "Reset Complete"
+    "success": "Reset completed. The application will be restarted.",
+    "successTitle": "Reset completed"
   },
   "language": {
-    "title": "Interface Language",
-    "select": "Select a language..."
+    "title": "Interface language",
+    "select": "Select language..."
   }
 }

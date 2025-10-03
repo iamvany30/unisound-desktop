@@ -1,0 +1,47 @@
+{
+  "app": {
+    "appName": "UniSound"
+  },
+  "header": {
+    "home": "Accueil",
+    "library": "Bibliothèque",
+    "likedSongs": "J'aime",
+    "profile": "Profil",
+    "settings": "Paramètres",
+    "adminPanel": "Panneau d'administration",
+    "logout": "Se déconnecter",
+    "login": "Se connecter",
+    "searchPlaceholder": "Rechercher des titres, des artistes, des albums...",
+    "windowControls": "Contrôles de la fenêtre",
+    "minimize": "Réduire",
+    "maximize": "Agrandir",
+    "restore": "Restaurer",
+    "close": "Fermer",
+    "goHome": "Aller à l'accueil",
+    "goBack": "Retour",
+    "goForward": "Suivant",
+    "refreshPage": "Actualiser la page"
+  },
+  "likedSongs": {
+    "trackCount": "{{count}} titres",
+    "trackCount_plural": "{{count}} titre",
+    "trackCount_plural_5": "{{count}} titres",
+    "empty": "Vous n'avez pas encore ajouté de titres à 'J'aime'.",
+    "error": "Impossible de charger votre liste de titres préférés.",
+    "retry": "Réessayer"
+  },
+  "userStatus": {
+    "admin": "Administrateur",
+    "user": "utilisateur"
+  },
+  "cancel": "Annuler",
+  "confirm": "Confirmer",
+  "confirmation": "Confirmation",
+  "ok": "OK",
+  "save": "Enregistrer",
+  "delete": "Supprimer",
+  "reset": "Réinitialiser",
+  "loading": "Chargement...",
+  "goHome": "Aller à l'accueil",
+  "languageName": "French"
+}

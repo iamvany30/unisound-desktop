@@ -1,0 +1,15 @@
+{
+  "collapsePlayer": "Схлопнуть музон",
+  "toggleLyrics": "Текст выкатить/спрятать",
+  "shuffle": "Вперемешку фигануть",
+  "previousTrack": "Предыдущий трэк",
+  "play": "Запустить",
+  "pause": "На паузу",
+  "nextTrack": "Следующий трэк",
+  "repeat": "Повторять",
+  "like": "Зацениваю",
+  "queue": "В очередь",
+  "volume": "Орало",
+  "trackProgress": "Как движется музло",
+  "coverArtFor": "Облога для {{title}}"
+}

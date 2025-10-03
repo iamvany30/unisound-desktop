@@ -3,43 +3,45 @@
     "appName": "UniSound"
   },
   "header": {
-    "home": "首页",
+    "home": "主页",
     "library": "媒体库",
-    "likedSongs": "我喜欢的",
-    "profile": "个人主页",
+    "likedSongs": "我喜欢的歌曲",
+    "profile": "个人资料",
     "settings": "设置",
     "adminPanel": "管理面板",
-    "logout": "退出登录",
+    "logout": "退出",
     "login": "登录",
-    "searchPlaceholder": "搜索曲目、艺术家、专辑...",
+    "searchPlaceholder": "搜索歌曲、艺人、专辑...",
     "windowControls": "窗口控制",
     "minimize": "最小化",
     "maximize": "最大化",
     "restore": "还原",
     "close": "关闭",
-    "goHome": "返回首页",
+    "goHome": "前往主页",
     "goBack": "后退",
     "goForward": "前进",
     "refreshPage": "刷新页面"
   },
   "likedSongs": {
-    "trackCount": "{{count}} 首曲目",
-    "empty": "您还没有喜欢任何歌曲。",
-    "error": "加载喜欢的歌曲列表失败。",
+    "trackCount": "{{count}} 首歌曲",
+    "trackCount_plural": "{{count}} 首歌曲",
+    "trackCount_plural_5": "{{count}} 首歌曲",
+    "empty": "您尚未在“我喜欢的歌曲”中添加任何歌曲。",
+    "error": "无法加载喜欢的歌曲列表。",
     "retry": "重试"
   },
   "userStatus": {
     "admin": "管理员",
     "user": "用户"
   },
-  "languageName": "简体中文",
+  "languageName": "中文",
   "cancel": "取消",
   "confirm": "确认",
-  "confirmation": "确认操作",
-  "ok": "好的",
+  "confirmation": "确认",
+  "ok": "确定",
   "save": "保存",
   "delete": "删除",
   "reset": "重置",
   "loading": "加载中...",
-  "goHome": "返回首页"
+  "goHome": "前往主页"
 }

@@ -1,36 +1,35 @@
 import React from 'react';
 import { useStatus } from '../../context/StatusContext';
-import { CheckCircle, AlertTriangle, WifiOff } from 'lucide-react';
+import { useNotification } from '../../context/NotificationContext';
+import { CheckCircle, AlertTriangle, WifiOff, Bell } from 'lucide-react';
+import NotificationPopover from './NotificationPopover';
 import './StatusBar.css';
 
 const statusConfig = {
-    online: {
-        Icon: CheckCircle,
-        text: 'Система в норме',
-        className: 'status-online'
-    },
-    degraded: {
-        Icon: AlertTriangle,
-        text: 'Ограниченная функциональность',
-        className: 'status-degraded'
-    },
-    offline: {
-        Icon: WifiOff,
-        text: 'Нет подключения к серверу',
-        className: 'status-offline'
-    }
+    online: { Icon: CheckCircle, className: 'status-bar--online' },
+    degraded: { Icon: AlertTriangle, className: 'status-bar--degraded' },
+    offline: { Icon: WifiOff, className: 'status-bar--offline' }
 };
 
 const StatusBar = () => {
-    const { status, lastError } = useStatus();
-    const { Icon, text, className } = statusConfig[status];
+    const { status } = useStatus();
+    const { notifications, isPopoverOpen, togglePopover } = useNotification();
+    const { Icon, className } = statusConfig[status];
 
-    const title = lastError ? `Подробности: ${lastError}` : text;
+    const persistentCount = notifications.filter(n => n.persistent).length;
 
     return (
-        <div className={`status-bar ${className}`} title={title}>
-            <Icon size={14} className="status-icon" />
-            <span className="status-text">{text}</span>
+        <div className="status-bar-container">
+            <button className={`status-bar-trigger ${className}`} onClick={togglePopover}>
+                <Icon size={14} className="status-icon" />
+                <div className={`notification-bell ${persistentCount > 0 ? 'active' : ''}`}>
+                    <Bell size={16} />
+                    {persistentCount > 0 && (
+                        <span className="notification-badge">{persistentCount}</span>
+                    )}
+                </div>
+            </button>
+            {isPopoverOpen && <NotificationPopover />}
         </div>
     );
 };
