@@ -93,26 +93,6 @@ npm run release
 
 ---
 
-## 📂 Project Structure
-
-```
-unisound-desktop/
-├── src/                    # React source code
-│   ├── components/         # React components
-│   ├── pages/             # Page components
-│   ├── assets/            # Images, icons, logos
-│   └── App.tsx            # Main App component
-├── electron/              # Electron main process
-├── public/                # Public static files
-├── build/                 # Build output (generated)
-├── dist/                  # Distribution files (generated)
-├── assets/                # App icons and installer assets
-├── package.json           # Project configuration
-├── tailwind.config.js     # Tailwind CSS configuration
-├── craco.config.js        # Craco configuration
-└── README.md              # This file
-```
-
 ---
 
 ## 🎯 Supported Audio Formats
