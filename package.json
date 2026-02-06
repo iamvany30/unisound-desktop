@@ -35,7 +35,7 @@
     "dev": "concurrently \"npm:start\" \"wait-on http://localhost:3000 && electron electron/electron.js\"",
     "clean": "rimraf dist build",
     "build:react": "react-scripts build",
-    "copy:electron": "copyfiles -u 1 electron/**/* build",
+    "copy:electron": "copyfiles -u 1 \"electron/**/*\" build",
     "dist": "npm run clean && npm run build:react && npm run copy:electron && electron-builder",
     "release": "npm run dist -- --publish always",
     "icons": "python create_icons.py src/assets/logo.png assets",
